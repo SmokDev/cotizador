@@ -20,6 +20,7 @@ export interface Quotation {
 }
 
 export interface QuotationMultipleItems extends Quotation {
+    title: string;
 	items: ItemMultiplePrices[];
 }
 
