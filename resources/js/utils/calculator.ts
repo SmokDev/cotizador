@@ -1,4 +1,4 @@
-import type { ItemMultiplePrices, ItemSinglePrice, Price } from "../types/quotations";
+import type { ItemSinglePrice, Price } from "../types/quotations";
 
 export function calculatorItem(item: Price): {
 	discount: number;
