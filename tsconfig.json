@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "jsx": "react-jsx",
+        "noEmit": true,
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "useDefineForClassFields": true,
+        "types": ["vite/client"],
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        }
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.tsx",
+        "resources/js/**/*.d.ts",
+        "resources/js/**/*.js",
+        "resources/js/**/*.jsx"
+    ]
+}
