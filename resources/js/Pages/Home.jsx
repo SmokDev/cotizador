@@ -1,3 +1,6 @@
+import { Button } from '@heroui/react';
 export default function Home() {
-    return <h1>Hola mundo 🔥</h1>;
+    return <Button>
+      My Button
+    </Button>;
 }
