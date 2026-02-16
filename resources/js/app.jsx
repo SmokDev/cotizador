@@ -1,5 +1,9 @@
 import { createInertiaApp } from "@inertiajs/react";
 import { createRoot } from "react-dom/client";
+import { route } from 'ziggy-js';
+
+// Expose route helper globally so we can use it like route('name')
+window.route = route;
 
 createInertiaApp({
     resolve: async (name) => {
