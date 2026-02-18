@@ -1,0 +1,448 @@
+.quotationContainer {
+	width: 816px; /* 8.5 pulgadas * 96 DPI = ancho fijo */
+	height: 1056px; /* 11 pulgadas * 96 DPI = altura fija */
+	max-width: none;
+	min-width: 816px; /* Forzar tamaño mínimo */
+	min-height: 1056px; /* Forzar altura mínima */
+	display: flex;
+	flex-direction: column;
+	padding: 72px; /* 0.75 pulgadas * 96 DPI = 72px */
+	background-color: var(--quotation-background-color);
+	color: var(--quotation-text-color);
+	font-family: Arial, sans-serif;
+	gap: 20px;
+	background-image: var(--quotation-bg-image);
+	background-size: cover;
+	background-repeat: no-repeat;
+	transform-origin: top left;
+	transform: none;
+	margin: 0;
+	box-sizing: border-box;
+	position: relative;
+	/* Optimizaciones para escalado en móvil */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+/* ENCABEZADO */
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.logo {
+	width: 280px;
+	height: auto;
+	object-fit: contain;
+	max-width: 280px;
+	display: block;
+}
+
+.headerInfo {
+	text-align: right;
+}
+
+.headerTitle {
+	font-size: 1.5rem;
+	font-weight: bold;
+	margin: 0;
+}
+
+.headerText {
+	font-size: 0.875rem;
+	margin: 0.25rem 0;
+}
+
+
+/* CLIENTE */
+.clientSection {
+	margin: 1rem 0;
+}
+
+.clientName {
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin: 0 0 0.5rem 0;
+}
+
+.clientCompany {
+	font-size: 1.125rem;
+	font-weight: 700;
+	margin: 0 0 0.5rem 0;
+}
+
+.clientEmail {
+	font-size: 0.875rem;
+	margin: 0;
+}
+
+/* TABLA DE ITEMS */
+.itemsTable {
+	width: 100%;
+	font-size: 0.875rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.tableHeader {
+	display: grid;
+	grid-template-columns: repeat(20, minmax(0, 1fr));
+	background-color: var(--quotation-primary-color);
+	color: var(--quotation-primary-foreground-color);
+	text-transform: uppercase;
+	font-weight: 600;
+	font-size: 0.75rem;
+	padding: 0.875rem;
+	border-radius: 0.5rem;
+}
+
+.headerColumn1 {
+	grid-column: span 4 / span 4;
+	text-align: left;
+	margin: 0;
+}
+
+.headerColumn2 {
+	grid-column: span 7 / span 7;
+	text-align: left;
+	margin: 0;
+}
+
+.headerColumn3 {
+	grid-column: span 2 / span 2;
+	text-align: center;
+	margin: 0;
+}
+
+.headerColumn4 {
+	grid-column: span 2 / span 2;
+	text-align: center;
+	margin: 0;
+}
+
+.headerColumn5 {
+	grid-column: span 2 / span 2;
+	text-align: center;
+	margin: 0;
+}
+
+.headerColumn6 {
+	grid-column: span 3 / span 3;
+	text-align: right;
+	margin: 0;
+}
+
+.tableRow {
+	display: grid;
+	grid-template-columns: repeat(20, minmax(0, 1fr));
+	border: 1px solid var(--quotation-primary-color);
+	background-color: var(--quotation-background-color);
+	padding: 0.875rem;
+	border-radius: 0.5rem;
+}
+
+.rowColumn1 {
+	grid-column: span 4 / span 4;
+	display: flex;
+	align-items: center;
+	color: var(--quotation-text-color);
+}
+
+.rowColumn2 {
+	grid-column: span 7 / span 7;
+	display: flex;
+	align-items: center;
+	color: var(--quotation-text-color);
+	white-space: pre-line;
+}
+
+.rowColumn3 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--quotation-text-color);
+}
+
+.rowColumn4 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--quotation-text-color);
+}
+
+.rowColumn5 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--quotation-text-color);
+}
+
+.rowColumn6 {
+	grid-column: span 3 / span 3;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	color: var(--quotation-text-color);
+}
+
+/* COTIZACIÓN ELEMENTO ÚNICO */
+.singleItemSection {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	font-size: 0.875rem;
+}
+
+.singleItemHeader {
+	background-color: var(--quotation-primary-color);
+	color: var(--quotation-primary-foreground-color);
+	border-radius: 0.5rem;
+	padding: 1rem 1.25rem;
+}
+
+.singleItemHeaderContent {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.singleItemName {
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--quotation-primary-foreground-color);
+}
+
+.singleItemDescription {
+	font-size: 0.875rem;
+	margin: 0;
+	color: var(--quotation-primary-foreground-color);
+	opacity: 0.9;
+	white-space: pre-line;
+}
+
+.singlePriceTable {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.singleTableHeader {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	background-color: var(--quotation-primary-color);
+	color: var(--quotation-primary-foreground-color);
+	text-transform: uppercase;
+	font-weight: 600;
+	font-size: 0.75rem;
+	padding: 0.875rem;
+	border-radius: 0.5rem;
+}
+
+.singleHeaderCol1 {
+	grid-column: span 2 / span 2;
+	text-align: center;
+	margin: 0;
+}
+
+.singleHeaderCol2 {
+	grid-column: span 3 / span 3;
+	text-align: center;
+	margin: 0;
+}
+
+.singleHeaderCol3 {
+	grid-column: span 2 / span 2;
+	text-align: center;
+	margin: 0;
+}
+
+.singleHeaderCol4 {
+	grid-column: span 2 / span 2;
+	text-align: right;
+	margin: 0;
+}
+
+.singleHeaderCol5 {
+	grid-column: span 1 / span 1;
+	text-align: right;
+	margin: 0;
+}
+
+.singleHeaderCol6 {
+	grid-column: span 2 / span 2;
+	text-align: right;
+	margin: 0;
+}
+
+.singleTableRow {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	border: 1px solid var(--quotation-primary-color);
+	background-color: var(--quotation-background-color);
+	padding: 0.875rem;
+	border-radius: 0.5rem;
+	color: var(--quotation-text-color);
+}
+
+.singleRowCol1 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-weight: 600;
+}
+
+.singleRowCol2 {
+	grid-column: span 3 / span 3;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.singleRowCol3 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.singleRowCol4 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.singleRowCol5 {
+	grid-column: span 1 / span 1;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.singleRowCol6 {
+	grid-column: span 2 / span 2;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	font-weight: 700;
+}
+
+
+.termsAndTotals {
+	display: flex;
+	justify-content: space-between;
+	gap: 2rem;
+}
+
+.termsSection {
+	width: 66.66%;
+	font-size: 0.875rem;
+	color: var(--quotation-text-color);
+}
+
+.termsTitle {
+	font-weight: 600;
+	color: var(--quotation-text-color);
+	margin: 0 0 0.5rem 0;
+}
+
+.termsText {
+	margin: 0.25rem 0;
+}
+
+.notesInTerms {
+	margin-top: 0.5rem;
+}
+
+.totalsSection {
+	width: 33.33%;
+	background-color: var(--quotation-primary-color);
+	color: var(--quotation-primary-foreground-color);
+	padding: 1rem;
+	border-radius: 0.5rem;
+	border: 1px solid var(--quotation-primary-color);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.totalsContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	font-size: 0.875rem;
+}
+
+.totalRow {
+	display: flex;
+	justify-content: space-between;
+}
+
+.totalDivider {
+	border-color: rgba(255, 255, 255, 0.4);
+	margin: 0.5rem 0;
+}
+
+.totalFinal {
+	display: flex;
+	justify-content: space-between;
+	font-weight: bold;
+}
+
+/* PIE */
+.footer {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	flex-grow: 1;
+	gap: 1.25rem;
+}
+
+.footerContent {
+	display: flex;
+	justify-content: space-between;
+}
+
+.signatureSection {
+	width: 66.66%;
+	font-size: 0.875rem;
+	color: var(--quotation-text-color);
+	position: relative;
+}
+
+.signature {
+	position: absolute;
+	bottom: -0.4rem;
+	left: 0;
+	width: 75px;
+	height: auto;
+	max-width: 75px;
+	display: none;
+}
+
+.signatureName {
+	font-weight: 600;
+	color: var(--quotation-text-color);
+	margin: 0 0 0.5rem 0;
+}
+
+.signatureInfo {
+	margin: 0.25rem 0;
+}
+
+.footerMessage {
+	padding-top: 1.5rem;
+	text-align: center;
+	font-size: 0.75rem;
+	color: var(--quotation-text-color);
+	border-top: 4px solid var(--quotation-primary-color);
+	margin: 0;
+}
