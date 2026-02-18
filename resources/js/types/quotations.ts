@@ -1,49 +1,80 @@
 import { Client } from "./client";
-import Result from "./priceResult";
 
 export interface QuotationContact {
 	name: string;
 	phone: string;
 	email: string;
 	address: string;
-	signature: string;
+	signature?: string;
 }
 
-export interface QuotationInterface<T extends  "multiple" | "single">{
-	type: T;
-	title?: T extends "multiple" ? string | undefined : null;
+export enum QuotationType {
+	Multiple = "multiple",
+	Single = "single",
+}
+
+export interface QuotationBase{
+	type: QuotationType;
 	client: Client;
 	number: number;
 	date: Date;
 	expirationDate: Date;
-	items: T extends "multiple" ? ItemSinglePrice[] : [Item];
 	notes: string;
 	contact: QuotationContact;
 	paymentTerms: string;
 	deliveryLabel: string;
 	daysDelivery: number;
-	result: T extends "multiple" ? Result : null;
+	template: QuotationTemplate;
 }
 
-export type Quotation = QuotationInterface<"multiple"> | QuotationInterface<"single">;
+export interface QuotationMultiple extends QuotationBase{
+	type: QuotationType.Multiple;
+	title?: string;
+	body: ItemSinglePrice[]
+	result: Result;
+}
+
+export interface QuotationSingle extends QuotationBase{
+	type: QuotationType.Single;
+	body: ItemMultiplePrice
+}
+
+export type Quotation = QuotationMultiple | QuotationSingle;
 
 export interface Price {
 	quantity: number;
-	unitPrice: number | {
-		items: string[];
-		prices: number[];
-	};
+	unitPrice: number;
 	discount: number;
 	result: Result;
 }
 
+export interface ItemSinglePrice {
+	name: string;
+	description: string;
+	price: Price;
+}
 
-export interface Item {
+export interface ItemMultiplePrice {
 	name: string;
 	description: string;
 	prices: Price[];
 }
+export interface QuotationTemplate {
+	logo: string;
+	background: string;
+    colors: {
+        text: string;
+        background: string;
+        primary: string;
+        primaryForeground: string;
+    }
+	footerMessage: string;
+}
 
-export interface ItemSinglePrice extends  Item {
-	prices: [Price];
+export interface Result {
+    subtotal: number;
+    subtotalWithoutDiscount: number;
+    discount: number;
+    iva: number;
+    total: number;
 }
