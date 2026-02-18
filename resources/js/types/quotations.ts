@@ -1,31 +1,32 @@
 import { Client } from "./client";
+import Result from "./priceResult";
 
-export interface Quotation {
+export interface QuotationContact {
+	name: string;
+	phone: string;
+	email: string;
+	address: string;
+	signature: string;
+}
+
+export interface QuotationInterface<T extends  "multiple" | "single">{
+	type: T;
+	title?: T extends "multiple" ? string | undefined : null;
 	client: Client;
 	number: number;
 	date: Date;
 	expirationDate: Date;
+	items: T extends "multiple" ? ItemSinglePrice[] : [Item];
 	notes: string;
-	contact: {
-			name: string;
-			phone: string;
-			email: string;
-			address: string;
-			signature: string;
-	};
+	contact: QuotationContact;
 	footerMessage: string;
 	paymentTerms: string;
 	deliveryLabel: string;
 	daysDelivery: number;
+	result: T extends "multiple" ? Result : null;
 }
 
-export interface QuotationMultipleItems extends Quotation {
-    title: string;
-	items: ItemMultiplePrices[];
-}
-
-
-export interface QuotationSingleItem extends Quotation, ItemSinglePrice {}
+export type Quotation = QuotationInterface<"multiple"> | QuotationInterface<"single">;
 
 export interface Price {
 	quantity: number;
@@ -34,16 +35,16 @@ export interface Price {
 		prices: number[];
 	};
 	discount: number;
+	result: Result;
 }
 
 
 export interface Item {
 	name: string;
 	description: string;
-}
-
-export interface ItemMultiplePrices extends Item {
 	prices: Price[];
 }
 
-export interface ItemSinglePrice extends  Item, Price {}
+export interface ItemSinglePrice extends  Item {
+	prices: [Price];
+}
