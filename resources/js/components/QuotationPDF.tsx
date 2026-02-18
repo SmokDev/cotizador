@@ -12,6 +12,7 @@ export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 			"--quotation-background-color": quotation.template.colors.background,
 			"--quotation-primary-color": quotation.template.colors.primary,
 			"--quotation-primary-foreground-color": quotation.template.colors.primaryForeground,
+			"--quotation-bg-image": quotation.template.background,
 		} as React.CSSProperties}>
 			{/* ENCABEZADO */}
 			<div className={styles.header}>
