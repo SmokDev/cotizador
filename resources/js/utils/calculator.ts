@@ -1,51 +1,38 @@
-import type { ItemSinglePrice, Price } from "../types/quotations";
+import type { Price } from "../types/quotations";
+import type Result from "../types/priceResult";
 
-export function calculatorItem(item: Price): {
-	discount: number;
-	subtotal: number;
-	total: number;
-} {
+export function calculatorPrice(price: Price, iva: number = 0.16): Result {
     let unitPrice: number = 0;
-    if (typeof item.unitPrice === "object") {
-        item.unitPrice.prices.forEach((price) => {
+    if (typeof price.unitPrice === "object") {
+        price.unitPrice.prices.forEach((price) => {
             unitPrice += price
         });
     } else {
-        unitPrice = item.unitPrice;
+        unitPrice = price.unitPrice;
     }
-	const discountItem = (item.discount / 100) * unitPrice;
+	const discountItem = (price.discount / 100) * unitPrice;
+	const discount = discountItem * price.quantity;
+	const subtotalWithoutDiscount = unitPrice * price.quantity;
+	const subtotal = subtotalWithoutDiscount - discount;
+	const ivaResult = subtotal * iva;
+	const total = subtotal + ivaResult;
 	return {
-		discount: discountItem * item.quantity,
-		subtotal: unitPrice * item.quantity,
-		total: (unitPrice - discountItem) * item.quantity,
+		discount,
+		subtotalWithoutDiscount,
+		subtotal,
+		iva: ivaResult,
+		total,
 	};
 }
 
-export function calculatorTotal(items: ItemSinglePrice[]): {
-	subtotal: number;
-	subtotalWithoutDiscount: number;
-	discount: number;
-	iva: number;
-	total: number;
-} {
-	const { subtotal, subtotalWithoutDiscount } = items.reduce(
-		(acc, item) => {
-			const { subtotal, total } = calculatorItem(item);
-			return {
-				subtotal: acc.subtotal + total,
-				subtotalWithoutDiscount: acc.subtotalWithoutDiscount + subtotal,
-			};
-		},
-		{ subtotal: 0, subtotalWithoutDiscount: 0 }
-	);
-
-	const iva = subtotal * 0.16;
-
-	return {
-		subtotal,
-		subtotalWithoutDiscount,
-		discount: subtotalWithoutDiscount - subtotal,
-		iva,
-		total: subtotal + iva,
-	};
+export function calculatorTotal(results: Result[]): Result {
+	return results.reduce((acc, result) =>{
+		return {
+			discount: acc.discount + result.discount,
+			subtotalWithoutDiscount: acc.subtotalWithoutDiscount + result.subtotalWithoutDiscount,
+			subtotal: acc.subtotal + result.subtotal,
+			iva: acc.iva + result.iva,
+			total: acc.total + result.total,
+		}
+	})
 }
