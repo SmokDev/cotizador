@@ -1,15 +1,7 @@
-import type { Price } from "../types/quotations";
-import type Result from "../types/priceResult";
+import type { Price, Result } from "../types/quotations";
 
 export function calculatorPrice(price: Price, iva: number = 0.16): Result {
-    let unitPrice: number = 0;
-    if (typeof price.unitPrice === "object") {
-        price.unitPrice.prices.forEach((price) => {
-            unitPrice += price
-        });
-    } else {
-        unitPrice = price.unitPrice;
-    }
+    let unitPrice: number = price.unitPrice;
 	const discountItem = (price.discount / 100) * unitPrice;
 	const discount = discountItem * price.quantity;
 	const subtotalWithoutDiscount = unitPrice * price.quantity;
