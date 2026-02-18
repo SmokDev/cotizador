@@ -19,7 +19,6 @@ export interface QuotationInterface<T extends  "multiple" | "single">{
 	items: T extends "multiple" ? ItemSinglePrice[] : [Item];
 	notes: string;
 	contact: QuotationContact;
-	footerMessage: string;
 	paymentTerms: string;
 	deliveryLabel: string;
 	daysDelivery: number;
