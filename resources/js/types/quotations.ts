@@ -8,13 +8,10 @@ export interface QuotationContact {
 	signature?: string;
 }
 
-export enum QuotationType {
-	Multiple = "multiple",
-	Single = "single",
-}
 
 export interface QuotationBase{
-	type: QuotationType;
+	isSingle: boolean;
+	title?: string;
 	client: Client;
 	number: number;
 	date: Date;
@@ -28,14 +25,14 @@ export interface QuotationBase{
 }
 
 export interface QuotationMultiple extends QuotationBase{
-	type: QuotationType.Multiple;
+	isSingle: false;
 	title?: string;
 	body: ItemSinglePrice[]
 	result: Result;
 }
 
 export interface QuotationSingle extends QuotationBase{
-	type: QuotationType.Single;
+	isSingle: true;
 	body: ItemMultiplePrice
 }
 

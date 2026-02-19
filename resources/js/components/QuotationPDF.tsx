@@ -1,6 +1,6 @@
 import styles from "./quotation-pdf.module.css";
 import { formatCurrency, formatDate } from "../utils/helpers";
-import { QuotationType, type Quotation } from "../types/quotations";
+import type { Quotation } from "../types/quotations";
 
 export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 
@@ -23,7 +23,7 @@ export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 					className={styles.logo}
 				/>
 				<div className={styles.headerInfo}>
-					{quotation.type == QuotationType.Multiple && (
+					{!quotation.isSingle && (
 						<h1 className={styles.headerTitle}>{quotation.title}</h1>
 					)}
 					<p className={styles.headerText}>
@@ -54,7 +54,7 @@ export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 			</div>
 
 			{/* TABLA DE ITEMS PARA COTIZACION DE MULTIPLES ELEMENTOS */}
-			{quotation.type == QuotationType.Multiple && (
+			{!quotation.isSingle && (
 			<div className={styles.itemsTable}>
 				{/* Encabezado de tabla */}
 				<div className={styles.tableHeader}>
@@ -88,7 +88,7 @@ export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 			)}
 
 			{/* TABLA DE PRECIOS PARA COTIZACION DE UN ELEMENTO */}
-			{quotation.type == QuotationType.Single && (
+			{quotation.isSingle && (
 				<div className={styles.singleItemSection}>
 					{/* Encabezado del item */}
 					<div className={styles.singleItemHeader}>
@@ -175,7 +175,7 @@ export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 				</div>
 
 				{
-					quotation.type == QuotationType.Multiple &&
+					!quotation.isSingle &&	
 					<div className={styles.totalsSection}>
 						<div className={styles.totalsContainer}>
 								<div className={styles.totalRow}>
