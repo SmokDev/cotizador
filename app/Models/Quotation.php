@@ -6,15 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Quotation extends Model
 {
-protected $fillable = [
-        'client_id', 'number', 'date', 'expiration_date', 'notes',
-        'contact', 'footer_message', 'payment_terms', 'delivery_label', 'days_delivery'
+    protected $fillable = [
+        'client_id',
+        'title',
+        'is_single',
+        'number',
+        'date',
+        'expiration_date',
+        'notes',
+        'contact',
+        'footer_message',
+        'payment_terms',
+        'delivery_label',
+        'days_delivery',
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date'            => 'date',
         'expiration_date' => 'date',
-        'contact' => 'array',
+        'contact'         => 'array',
+        'is_single'       => 'boolean',
     ];
 
     protected $appends = ['total'];
@@ -29,21 +40,17 @@ protected $fillable = [
         return $this->hasMany(Item::class);
     }
 
-    public function getTotalAttribute()
+    /**
+     * Calculate the quotation grand total by summing all prices across all items.
+     * Each Price row: subtotal = (unit_price * quantity) * (1 - discount/100)
+     */
+    public function getTotalAttribute(): float
     {
-        return $this->items->sum(function ($item) {
-            $price = $item->unit_price;
-            $unitTotal = 0;
-            
-            if (is_numeric($price)) {
-                $unitTotal = $price;
-            } elseif (is_array($price) && isset($price['prices'])) {
-                 // specific logic for complex price structure
-                 // assuming prices is array of numbers
-                 $unitTotal = array_sum($price['prices']);
-            }
-            
-            return ($unitTotal * $item->quantity) - $item->discount;
-        });
+        return $this->items->reduce(function (float $carry, Item $item) {
+            return $carry + $item->prices->sum(function (Price $price) {
+                $subtotal = $price->unit_price * $price->quantity;
+                return $subtotal - ($subtotal * ($price->discount / 100));
+            });
+        }, 0.0);
     }
 }

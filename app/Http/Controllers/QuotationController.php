@@ -7,7 +7,6 @@ use App\Models\Quotation;
 use App\Http\Requests\StoreQuotationRequest;
 use App\Http\Requests\UpdateQuotationRequest;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 
 class QuotationController extends Controller
 {
@@ -28,8 +27,12 @@ class QuotationController extends Controller
     {
         $quotation = Quotation::create($request->validated());
 
-        if ($request->has('items')) {
-            $quotation->items()->createMany($request->all()['items']);
+        foreach ($request->input('items', []) as $itemData) {
+            $prices = $itemData['prices'] ?? [];
+            unset($itemData['prices']);
+
+            $item = $quotation->items()->create($itemData);
+            $item->prices()->createMany($prices);
         }
 
         return redirect()->route('quotations.index');
@@ -37,16 +40,16 @@ class QuotationController extends Controller
 
     public function show(Quotation $quotation)
     {
-        $quotation->load(['client', 'items']);
+        $quotation->load(['client', 'items.prices']);
         return Inertia::render('Quotations/Show', ['quotation' => $quotation]);
     }
 
     public function edit(Quotation $quotation)
     {
-        $quotation->load('items');
+        $quotation->load('items.prices');
         return Inertia::render('Quotations/Edit', [
             'quotation' => $quotation,
-            'clients' => Client::all()
+            'clients'   => Client::all(),
         ]);
     }
 
@@ -55,24 +58,32 @@ class QuotationController extends Controller
         $quotation->update($request->validated());
 
         $items = $request->input('items', []);
-        
-        // Ensure items is an array
-        if (!is_array($items)) {
-            $items = [];
-        }
 
-        // Get IDs of items to keep
-        $keepIds = array_filter(array_column($items, 'id'));
-        
-        // Delete items not in the Keep list
-        $quotation->items()->whereNotIn('id', $keepIds)->delete();
+        // IDs of items to keep
+        $keepItemIds = array_filter(array_column($items, 'id'));
 
-        // Update or Create items
-        foreach ($items as $item) {
-            $quotation->items()->updateOrCreate(
-                ['id' => $item['id'] ?? null],
-                $item
+        // Delete removed items (cascades to their prices)
+        $quotation->items()->whereNotIn('id', $keepItemIds)->delete();
+
+        foreach ($items as $itemData) {
+            $prices = $itemData['prices'] ?? [];
+            unset($itemData['prices']);
+
+            $item = $quotation->items()->updateOrCreate(
+                ['id' => $itemData['id'] ?? null],
+                $itemData
             );
+
+            // IDs of prices to keep for this item
+            $keepPriceIds = array_filter(array_column($prices, 'id'));
+            $item->prices()->whereNotIn('id', $keepPriceIds)->delete();
+
+            foreach ($prices as $priceData) {
+                $item->prices()->updateOrCreate(
+                    ['id' => $priceData['id'] ?? null],
+                    $priceData
+                );
+            }
         }
 
         return redirect()->route('quotations.index');

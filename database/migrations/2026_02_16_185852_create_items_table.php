@@ -16,9 +16,6 @@ return new class extends Migration
             $table->foreignId('quotation_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('quantity');
-            $table->json('unit_price');
-            $table->decimal('discount', 8, 2)->default(0);
             $table->timestamps();
         });
     }

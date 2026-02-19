@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('quotations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained()->cascadeOnDelete();
+            $table->string('title')->nullable();
+            $table->boolean('is_single')->default(false);
             $table->integer('number')->unique();
             $table->date('date');
             $table->date('expiration_date');
