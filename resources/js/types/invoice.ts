@@ -21,6 +21,8 @@ export interface Invoice{
 	paymentTerms: string;
 	deliveryLabel: string;
 	daysDelivery: number;
+	template: InvoiceTemplate;
+	results: Result;
 }
 
 export interface Item {
@@ -28,6 +30,7 @@ export interface Item {
 	quantity: number;
 	unitPrice: UnitPrice;
 	percentDiscount: number;
+	result: Result;
 }
 
 export type UnitPrice = number | {
