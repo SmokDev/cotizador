@@ -1,10 +1,20 @@
-import type { Price, Result } from "../types/quotations";
+import type { Item, Result, UnitPrice } from "../types/invoice";
 
-export function calculatorPrice(price: Price, iva: number = 0.16): Result {
-    let unitPrice: number = price.unitPrice;
-	const discountItem = (price.discount / 100) * unitPrice;
-	const discount = discountItem * price.quantity;
-	const subtotalWithoutDiscount = unitPrice * price.quantity;
+export function calculatorUnitPrice(unitPrice: UnitPrice): number {
+	if (typeof unitPrice === "number") {
+		return unitPrice;
+	}
+	const {spents, utility} = unitPrice;
+	const totalSpents = spents.reduce((acc, spent) => acc + spent.quantity, 0);
+	return totalSpents * (1 + ( utility / 100));
+}
+
+export function calculatorPrice({quantity, unitPrice, percentDiscount}: Item, iva: number = 0.16): Result {
+
+	const unitPriceResult = calculatorUnitPrice(unitPrice);
+	const discountItem = (percentDiscount / 100) * unitPriceResult;
+	const discount = discountItem * quantity;
+	const subtotalWithoutDiscount = unitPriceResult * quantity;
 	const subtotal = subtotalWithoutDiscount - discount;
 	const ivaResult = subtotal * iva;
 	const total = subtotal + ivaResult;
