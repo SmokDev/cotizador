@@ -16,10 +16,9 @@ class InvoiceController extends Controller
         // Traemos las facturas junto con su cliente (Eager Loading) para evitar N+1 queries.
         $invoices = Invoice::with('client')->latest()->get();
         
-        // Retornamos como JSON como ejemplo básico.
-        // Si usas Inertia.js (React/Vue), esto sería algo como: 
-        // return inertia('Invoices/Index', ['invoices' => $invoices]);
-        return response()->json($invoices);
+        return inertia('Invoices/Index', [
+            'invoices' => $invoices
+        ]);
     }
 
     /**
