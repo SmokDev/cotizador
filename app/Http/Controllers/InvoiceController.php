@@ -13,8 +13,8 @@ class InvoiceController extends Controller
      */
     public function index()
     {
-        // Traemos las facturas junto con su cliente (Eager Loading) para evitar N+1 queries.
-        $invoices = Invoice::with('client')->latest()->get();
+        // Traemos las facturas junto con su cliente e items (Eager Loading) para evitar N+1 queries.
+        $invoices = Invoice::with(['client', 'items'])->latest()->get();
         
         return inertia('Invoices/Index', [
             'invoices' => $invoices
