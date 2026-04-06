@@ -14,10 +14,26 @@ class InvoiceController extends Controller
     public function index()
     {
         // Traemos las facturas junto con su cliente e items (Eager Loading) para evitar N+1 queries.
-        $invoices = Invoice::with(['client', 'items'])->latest()->get();
+        $invoices = Invoice::with(['client', 'items'])
+    ->when(request('search'), function ($query) {
+        $search = request('search');
+
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhereHas('client', function ($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              });
+        });
+    })
+    ->latest()
+    ->paginate(15)
+    ->withQueryString();
         
         return inertia('Invoices/Index', [
-            'invoices' => $invoices
+            'invoices' => $invoices,
+            'filters' => [
+                'search' => request('search')
+            ]
         ]);
     }
 
