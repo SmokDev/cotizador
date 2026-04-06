@@ -1,16 +1,15 @@
 import type { Item, Result, UnitPrice } from "../types/invoice";
 
 export function calculatorUnitPrice(unitPrice: UnitPrice): number {
-	if (typeof unitPrice === "number") {
-		return unitPrice;
+	if (typeof unitPrice === "object") {
+		const {spents, utility} = unitPrice;
+		const totalSpents = spents.reduce((acc, spent) => acc + spent.quantity, 0);
+		return totalSpents * (1 + ( utility / 100));
 	}
-	const {spents, utility} = unitPrice;
-	const totalSpents = spents.reduce((acc, spent) => acc + spent.quantity, 0);
-	return totalSpents * (1 + ( utility / 100));
+	return unitPrice;
 }
 
-export function calculatorPrice({quantity, unitPrice, percentDiscount}: Item, iva: number = 0.16): Result {
-
+export function calculatorPrice(quantity: number, unitPrice: UnitPrice, percentDiscount: number, iva: number = 0.16): Result {
 	const unitPriceResult = calculatorUnitPrice(unitPrice);
 	const discountItem = (percentDiscount / 100) * unitPriceResult;
 	const discount = discountItem * quantity;
@@ -36,5 +35,11 @@ export function calculatorTotal(results: Result[]): Result {
 			iva: acc.iva + result.iva,
 			total: acc.total + result.total,
 		}
+	}, {
+		discount: 0,
+		subtotalWithoutDiscount: 0,
+		subtotal: 0,
+		iva: 0,
+		total: 0,
 	})
 }
