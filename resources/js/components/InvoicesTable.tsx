@@ -35,7 +35,7 @@ export function InvoicesTable({ invoices }: { invoices: (Invoice & {id: number})
         <Table variant="secondary" className="h-full">
           <Table.ScrollContainer className="h-full">
             <Table.Content aria-label="Cotizaciones" className="min-w-[600px]">
-              <Table.Header>
+              <Table.Header className="sticky top-0 z-10">
                 <Table.Column isRowHeader className="w-30 text-left">#</Table.Column>
                 <Table.Column>Cliente</Table.Column>
                 <Table.Column>Titulo</Table.Column>
