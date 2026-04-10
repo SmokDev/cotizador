@@ -1,6 +1,6 @@
 import styles from "./quotation-pdf.module.css";
 import { formatCurrency, formatDate } from "../utils/helpers";
-import type { Quotation } from "../types/quotations";
+import type { Quotation } from "../types/invoice";
 
 export default function QuotationPDF({quotation}: {quotation: Quotation}) {
 
