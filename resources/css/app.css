@@ -65,6 +65,7 @@
   --font-sans: var(--font-inter);
 
   --field-border: var(--border);
+  --border-width-field: 1px;
 }
 
 .dark,
