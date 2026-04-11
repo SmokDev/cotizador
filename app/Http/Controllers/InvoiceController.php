@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,18 @@ class InvoiceController extends Controller
             'filters' => [
                 'search' => request('search')
             ]
+        ]);
+    }
+
+    /**
+     * Mostrar la vista para crear una nueva cotización.
+     */
+    public function create()
+    {
+        $clients = Client::orderBy('name')->get();
+
+        return inertia('Invoices/Create', [
+            'clients' => $clients
         ]);
     }
 
@@ -85,7 +98,7 @@ class InvoiceController extends Controller
             return $invoice->load('items');
         });
 
-        return response()->json($invoice, 201);
+        return redirect()->route('invoices.index');
     }
 
     /**
