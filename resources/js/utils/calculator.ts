@@ -9,8 +9,16 @@ export function calculatorUnitPrice(unitPrice: UnitPrice): number {
 	return unitPrice;
 }
 
+export function calculatorUnitPricePerUnit(unitPrice: UnitPrice, quantity: number): number {
+	if (typeof unitPrice === "object") {
+		const total = calculatorUnitPrice(unitPrice);
+		return quantity > 0 ? total / quantity : total;
+	}
+	return unitPrice;
+}
+
 export function calculatorPrice(quantity: number, unitPrice: UnitPrice, percentDiscount: number, iva: number = 0.16): Result {
-	const unitPriceResult = calculatorUnitPrice(unitPrice);
+	const unitPriceResult = calculatorUnitPricePerUnit(unitPrice, quantity);
 	const discountItem = (percentDiscount / 100) * unitPriceResult;
 	const discount = discountItem * quantity;
 	const subtotalWithoutDiscount = unitPriceResult * quantity;

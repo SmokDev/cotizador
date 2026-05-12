@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Invoice;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
@@ -14,27 +16,23 @@ class InvoiceController extends Controller
      */
     public function index()
     {
-        // Traemos las facturas junto con su cliente e items (Eager Loading) para evitar N+1 queries.
         $invoices = Invoice::with(['client', 'items'])
-    ->when(request('search'), function ($query) {
-        $search = request('search');
+            ->when(request('search'), function ($query) {
+                $search = request('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhereHas('client', function ($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-        $query->where(function ($q) use ($search) {
-            $q->where('title', 'like', "%{$search}%")
-              ->orWhereHas('client', function ($q) use ($search) {
-                  $q->where('name', 'like', "%{$search}%");
-              });
-        });
-    })
-    ->latest()
-    ->paginate(15)
-    ->withQueryString();
-        
         return inertia('Invoices/Index', [
             'invoices' => $invoices,
-            'filters' => [
-                'search' => request('search')
-            ]
+            'filters' => ['search' => request('search')],
         ]);
     }
 
@@ -46,7 +44,7 @@ class InvoiceController extends Controller
         $clients = Client::orderBy('name')->get();
 
         return inertia('Invoices/Create', [
-            'clients' => $clients
+            'clients' => $clients,
         ]);
     }
 
@@ -55,46 +53,36 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        // En un proyecto escalable, esta validación iría en un "FormRequest" separado.
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'number' => 'required|integer|unique:invoices',
-            'date' => 'required|date',
-            'expiration_date' => 'required|date',
-            'notes' => 'nullable|string',
-            'contact' => 'required|array',       // Nuestro campo JSON
-            'payment_terms' => 'required|string',
-            'delivery_label' => 'required|string',
-            'days_delivery' => 'required|integer',
-            
-            // Validando el arreglo de items
-            'items' => 'required|array',
-            'items.*.description' => 'required|string',
-            'items.*.quantity' => 'required|numeric',
-            'items.*.unit_price' => 'required', // Puede ser numérico o asociativo basado en la interfaz
-            'items.*.percent_discount' => 'nullable|numeric',
+            'client_id'            => 'required|exists:clients,id',
+            'title'                => 'required|string',
+            'description'          => 'nullable|string',
+            'number'               => 'required|integer|unique:invoices',
+            'date'                 => 'required|date',
+            'expiration_date'      => 'required|date',
+            'notes'                => 'nullable|string',
+            'contact'              => 'required|array',
+            'payment_terms'        => 'required|string',
+            'delivery_label'       => 'required|string',
+            'days_delivery'        => 'required|integer',
+
+            'items'                          => 'required|array',
+            'items.*.description'            => 'required|string',
+            'items.*.quantity'               => 'required|numeric',
+            'items.*.unit_price'             => 'required',
+            'items.*.percent_discount'       => 'nullable|numeric',
         ]);
 
-        // Usamos una transacción para asegurar que la Cotización y sus Items se guarden juntos.
-        // Si falla un item, no se crea la cotización vacía.
         $invoice = DB::transaction(function () use ($validated) {
-            
-            // 1. Crear la Cotización Base
             $invoice = Invoice::create($validated);
 
-            // 2. Formatear y Crear los Items
             $items = collect($validated['items'])->map(function ($item) {
-                // Asignar un descuento por defecto si no viene
                 $item['percent_discount'] = $item['percent_discount'] ?? 0;
                 return $item;
             });
 
-            // createMany inserta los registros y asocia automáticamente el id de la factura.
             $invoice->items()->createMany($items->toArray());
 
-            // Retornar la factura recién creada con sus items asociados
             return $invoice->load('items');
         });
 
@@ -106,10 +94,74 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
-        // Cargamos las relaciones que vamos a necesitar en la vista
         $invoice->load(['client', 'items']);
-        
-        return response()->json($invoice);
+        return inertia('Invoices/Show', ['invoice' => $invoice]);
+    }
+
+    /**
+     * Generar y descargar PDF de la cotización.
+     */
+    public function downloadPdf(Invoice $invoice)
+    {
+        $invoice->load(['client', 'items']);
+
+        $pdf = Pdf::loadView('pdf.quotation', [
+            'invoice' => $invoice,
+        ]);
+
+        return $pdf->download("cotizacion-{$invoice->number}.pdf");
+    }
+
+    /**
+     * Guardar y devolver ID para descarga inmediata de PDF.
+     */
+    public function saveAndDownload(Request $request)
+    {
+        $validated = $request->validate([
+            'client_id'            => 'required|exists:clients,id',
+            'title'                => 'required|string',
+            'description'          => 'nullable|string',
+            'number'               => 'required|integer|unique:invoices',
+            'date'                 => 'required|date',
+            'expiration_date'      => 'required|date',
+            'notes'                => 'nullable|string',
+            'contact'              => 'required|array',
+            'payment_terms'        => 'required|string',
+            'delivery_label'       => 'required|string',
+            'days_delivery'        => 'required|integer',
+
+            'items'                          => 'required|array',
+            'items.*.description'            => 'required|string',
+            'items.*.quantity'               => 'required|numeric',
+            'items.*.unit_price'             => 'required',
+            'items.*.percent_discount'       => 'nullable|numeric',
+        ]);
+
+        $invoice = DB::transaction(function () use ($validated) {
+            $invoice = Invoice::create($validated);
+            $items = collect($validated['items'])->map(function ($item) {
+                $item['percent_discount'] = $item['percent_discount'] ?? 0;
+                return $item;
+            });
+            $invoice->items()->createMany($items->toArray());
+            return $invoice->fresh()->load(['items', 'client']);
+        });
+
+        return response()->json(['id' => $invoice->id]);
+    }
+
+    /**
+     * Mostrar formulario de edición (redirige a create con datos).
+     */
+    public function edit(Invoice $invoice)
+    {
+        $invoice->load(['client', 'items']);
+        $clients = Client::orderBy('name')->get();
+
+        return inertia('Invoices/Create', [
+            'clients' => $clients,
+            'invoice' => $invoice,
+        ]);
     }
 
     /**
@@ -118,18 +170,32 @@ class InvoiceController extends Controller
     public function update(Request $request, Invoice $invoice)
     {
         $validated = $request->validate([
-            'title' => 'sometimes|required|string',
-            'description' => 'sometimes|required|string',
-            'contact' => 'sometimes|required|array',
-            // Otras validaciones aquí...
+            'title'            => 'sometimes|required|string',
+            'description'      => 'sometimes|required|string',
+            'contact'          => 'sometimes|required|array',
+            'items'            => 'sometimes|array',
+            'items.*.id'       => 'sometimes|exists:invoice_items,id',
+            'items.*.description'      => 'required_with:items|string',
+            'items.*.quantity'         => 'required_with:items|numeric',
+            'items.*.unit_price'       => 'required_with:items',
+            'items.*.percent_discount' => 'nullable|numeric',
         ]);
-        
-        $invoice->update($validated);
-        
-        // La actualización de items suele involucrar borrar/recrear o sincronizar
-        // Puedes agregar esa lógica si llega información en $request->items
-        
-        return response()->json($invoice);
+
+        DB::transaction(function () use ($invoice, $validated) {
+            $invoice->update($validated);
+
+            if (isset($validated['items'])) {
+                $invoice->items()->delete();
+                $items = collect($validated['items'])->map(function ($item) {
+                    $item['percent_discount'] = $item['percent_discount'] ?? 0;
+                    unset($item['id']);
+                    return $item;
+                });
+                $invoice->items()->createMany($items->toArray());
+            }
+        });
+
+        return back();
     }
 
     /**
@@ -137,10 +203,8 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice)
     {
-        // Gracias a que en la migración pusimos "cascadeOnDelete()", 
-        // los invoice_items se eliminarán automáticamente.
         $invoice->delete();
-        
-        return response()->json(['message' => 'Cotización eliminada correctamente'], 204);
+
+        return redirect()->route('invoices.index');
     }
 }

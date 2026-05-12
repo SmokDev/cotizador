@@ -21,7 +21,7 @@ export function InvoicesTableRow({ invoice}: { invoice: any}) {
           <Table.Cell className="w-40">
             <div className="flex gap-1 justify-end">
               <Link href={`/invoices/${invoice.id}`}><Button isIconOnly size="sm" variant="tertiary"><Eye /></Button></Link>
-              <Link href={`/invoices/${invoice.id}`}><Button isIconOnly size="sm" variant="tertiary"><ArrowDown /></Button></Link>
+              <Link href={`/invoices/${invoice.id}/pdf`}><Button isIconOnly size="sm" variant="tertiary"><ArrowDown /></Button></Link>
               <Link href={`/invoices/${invoice.id}/edit`}><Button isIconOnly size="sm" variant="tertiary"><Pencil /></Button></Link>
               <Link href={`/invoices/${invoice.id}/delete`}><Button isIconOnly size="sm" variant="danger-soft"><Trash /></Button></Link>
             </div>
