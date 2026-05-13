@@ -127,8 +127,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th class="text-left" style="width:35%">Nombre</th>
-                <th class="text-left" style="width:25%">Descripción</th>
+                <th class="text-left" style="width:60%" colspan="2">Descripción</th>
                 <th class="text-center" style="width:10%">Cant.</th>
                 <th class="text-center" style="width:12%">P/U</th>
                 <th class="text-center" style="width:8%">Desc.</th>
@@ -164,8 +163,7 @@
                 $totalFinal += $lineTotal;
             @endphp
             <tr>
-                <td class="text-left">{{ $item->description }}</td>
-                <td class="text-left"></td>
+                <td class="text-left" colspan="2">{{ $item->description }}</td>
                 <td class="text-center">{{ number_format($qty, 2) }}</td>
                 <td class="text-center">${{ number_format($unitPriceValue, 2) }}</td>
                 <td class="text-center">{{ $discountPct > 0 ? $discountPct . '%' : '-' }}</td>

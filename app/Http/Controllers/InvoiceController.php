@@ -26,13 +26,27 @@ class InvoiceController extends Controller
                       });
                 });
             })
+            ->when(request('date'), function ($query) {
+                $query->whereDate('date', request('date'));
+            })
+            ->when(request('start_date'), function ($query) {
+                $query->whereDate('date', '>=', request('start_date'));
+            })
+            ->when(request('end_date'), function ($query) {
+                $query->whereDate('date', '<=', request('end_date'));
+            })
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
         return inertia('Invoices/Index', [
             'invoices' => $invoices,
-            'filters' => ['search' => request('search')],
+            'filters' => [
+                'search' => request('search'),
+                'date' => request('date'),
+                'start_date' => request('start_date'),
+                'end_date' => request('end_date'),
+            ],
         ]);
     }
 

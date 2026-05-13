@@ -1,9 +1,10 @@
 import { Head, Link } from "@inertiajs/react";
 import { Surface, SearchField, Button, Pagination } from "@heroui/react";
 import { buttonVariants, paginationVariants } from "@heroui/styles";
-import { Plus, Calendar } from "lucide-react";
+import { Plus } from "lucide-react";
 import { InvoicesTable } from "@/components/InvoicesTable";
-import { useState } from "react";
+import DateFilter from "@/components/DateFilter";
+import { useState, useMemo } from "react";
 import { router } from "@inertiajs/react";
 import debounce from "lodash/debounce";
 
@@ -39,6 +40,9 @@ interface Props {
     };
     filters: {
         search: string;
+        date?: string;
+        start_date?: string;
+        end_date?: string;
     };
 }
 
@@ -47,18 +51,19 @@ export default function Index({ invoices, filters }: Props) {
 
     const handleSearch = (search: string) => {
         setSearch(search);
-        debouncedSearch(search);
+        const f: Record<string, string> = { search };
+        if (filters?.date) f.date = filters.date;
+        if (filters?.start_date) f.start_date = filters.start_date;
+        if (filters?.end_date) f.end_date = filters.end_date;
+        debouncedSearch(f);
     };
 
-    const debouncedSearch = debounce(
-        (search: string) =>
-            router.get(
-                "/invoices",
-                { search },
-                { preserveState: true, preserveScroll: true, replace: true },
-            ),
+    const debouncedSearch = useMemo(() => debounce(
+        (f: Record<string, string>) => {
+            router.get("/invoices", f, { preserveState: true, preserveScroll: true, replace: true });
+        },
         500,
-    );
+    ), []);
 
     return (
         <div className="p-8 h-screen box-border">
@@ -84,9 +89,7 @@ export default function Index({ invoices, filters }: Props) {
                                 <SearchField.ClearButton />
                             </SearchField.Group>
                         </SearchField>
-                        <Button variant="secondary">
-                            <Calendar /> Filtrar por Fecha
-                        </Button>
+                        <DateFilter filters={filters} />
                     </div>
                     <Link
                         href="/invoices/create"

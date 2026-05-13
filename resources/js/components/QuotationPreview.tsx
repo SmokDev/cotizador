@@ -84,8 +84,7 @@ export default function QuotationPreview({
                 <table className="w-full border-collapse text-sm">
                     <thead>
                         <tr className="bg-amber-700 text-white">
-                            <th className="text-left py-2 px-3 rounded-l-lg w-[35%]">Nombre</th>
-                            <th className="text-left py-2 px-3 w-[25%]">Descripción</th>
+                            <th className="text-left py-2 px-3 rounded-l-lg w-[60%]" colSpan={2}>Descripción</th>
                             <th className="text-center py-2 px-3 w-[12%]">Cant.</th>
                             <th className="text-center py-2 px-3 w-[13%]">P/U</th>
                             <th className="text-center py-2 px-3 w-[10%]">Desc.</th>
@@ -95,8 +94,7 @@ export default function QuotationPreview({
                     <tbody>
                         {items.map((item, i) => (
                             <tr key={i} className="border-b border-amber-100">
-                                <td className="py-2 px-3 text-gray-800">{item.description || "-"}</td>
-                                <td className="py-2 px-3 text-gray-500"></td>
+                                <td className="py-2 px-3 text-gray-800" colSpan={2}>{item.description || "-"}</td>
                                 <td className="py-2 px-3 text-center">{item.quantity}</td>
                                 <td className="py-2 px-3 text-center">${formatCurrency(unitPriceValue(item.unit_price, item.quantity))}</td>
                                 <td className="py-2 px-3 text-center">{item.percent_discount ? `${item.percent_discount}%` : "-"}</td>
