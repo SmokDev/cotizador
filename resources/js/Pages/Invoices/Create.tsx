@@ -3,7 +3,7 @@ import { Head, Link, useForm, router } from "@inertiajs/react";
 import axios from "axios";
 import {
     Button, Surface, TextField, Input, TextArea, Label, FieldError,
-    NumberField, Select, ListBox, ListBoxItem,
+    NumberField, Select, ListBox, ListBoxItem, DatePicker, DateField, Calendar,
 } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import { ArrowLeft, Plus, Trash, Calculator, Download } from "lucide-react";
@@ -11,6 +11,7 @@ import QuotationPreview from "@/components/QuotationPreview";
 import CostProfitModal from "@/components/CostProfitModal";
 import { calculatorPrice, calculatorTotal, calculatorUnitPrice } from "@/utils/calculator";
 import { formatCurrency } from "@/utils/helpers";
+import { CalendarDate, parseDate } from "@internationalized/date";
 
 interface Client { id: number; name: string; company: string; }
 
@@ -45,6 +46,23 @@ export default function Create({ clients, invoice }: Props) {
     });
 
     const [costModalIndex, setCostModalIndex] = useState<number | null>(null);
+
+    const toCalendarDate = (str: string) => {
+        try { return parseDate(str); } catch { return null; }
+    };
+
+    const [calDate, setCalDate] = useState<CalendarDate | null>(() => toCalendarDate(data.date));
+    const [calExpDate, setCalExpDate] = useState<CalendarDate | null>(() => toCalendarDate(data.expiration_date));
+
+    const handleCalDateChange = (v: CalendarDate | null) => {
+        setCalDate(v);
+        if (v) setData("date", v.toString());
+    };
+
+    const handleCalExpDateChange = (v: CalendarDate | null) => {
+        setCalExpDate(v);
+        if (v) setData("expiration_date", v.toString());
+    };
 
     useEffect(() => {
         if (data.items.length === 0 && !invoice) {
@@ -176,19 +194,68 @@ export default function Create({ clients, invoice }: Props) {
                                     </Select.Popover>
                                 </Select>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <TextField type="date" value={data.date} onChange={v => setData("date", v)}
-                                        isInvalid={!!errors.date} isRequired>
+                                    <DatePicker value={calDate} onChange={handleCalDateChange} isInvalid={!!errors.date} isRequired>
                                         <Label>Fecha <span className="text-red-500">*</span></Label>
-                                        <Input />
+                                        <DateField.Group fullWidth>
+                                            <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
+                                            <DateField.Suffix>
+                                                <DatePicker.Trigger>
+                                                    <DatePicker.TriggerIndicator />
+                                                </DatePicker.Trigger>
+                                            </DateField.Suffix>
+                                        </DateField.Group>
+                                        <DatePicker.Popover>
+                                            <Calendar aria-label="Fecha">
+                                                <Calendar.Header>
+                                                    <Calendar.YearPickerTrigger>
+                                                        <Calendar.YearPickerTriggerHeading />
+                                                        <Calendar.YearPickerTriggerIndicator />
+                                                    </Calendar.YearPickerTrigger>
+                                                    <Calendar.NavButton slot="previous" />
+                                                    <Calendar.NavButton slot="next" />
+                                                </Calendar.Header>
+                                                <Calendar.Grid>
+                                                    <Calendar.GridHeader>{(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}</Calendar.GridHeader>
+                                                    <Calendar.GridBody>{(d) => <Calendar.Cell date={d} />}</Calendar.GridBody>
+                                                </Calendar.Grid>
+                                                <Calendar.YearPickerGrid>
+                                                    <Calendar.YearPickerGridBody>{({ year }) => <Calendar.YearPickerCell year={year} />}</Calendar.YearPickerGridBody>
+                                                </Calendar.YearPickerGrid>
+                                            </Calendar>
+                                        </DatePicker.Popover>
                                         <FieldError>{errors.date}</FieldError>
-                                    </TextField>
-                                    <TextField type="date" value={data.expiration_date}
-                                        onChange={v => setData("expiration_date", v)}
-                                        isInvalid={!!errors.expiration_date} isRequired>
+                                    </DatePicker>
+                                    <DatePicker value={calExpDate} onChange={handleCalExpDateChange} isInvalid={!!errors.expiration_date} isRequired>
                                         <Label>Expiración <span className="text-red-500">*</span></Label>
-                                        <Input />
+                                        <DateField.Group fullWidth>
+                                            <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
+                                            <DateField.Suffix>
+                                                <DatePicker.Trigger>
+                                                    <DatePicker.TriggerIndicator />
+                                                </DatePicker.Trigger>
+                                            </DateField.Suffix>
+                                        </DateField.Group>
+                                        <DatePicker.Popover>
+                                            <Calendar aria-label="Expiración">
+                                                <Calendar.Header>
+                                                    <Calendar.YearPickerTrigger>
+                                                        <Calendar.YearPickerTriggerHeading />
+                                                        <Calendar.YearPickerTriggerIndicator />
+                                                    </Calendar.YearPickerTrigger>
+                                                    <Calendar.NavButton slot="previous" />
+                                                    <Calendar.NavButton slot="next" />
+                                                </Calendar.Header>
+                                                <Calendar.Grid>
+                                                    <Calendar.GridHeader>{(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}</Calendar.GridHeader>
+                                                    <Calendar.GridBody>{(d) => <Calendar.Cell date={d} />}</Calendar.GridBody>
+                                                </Calendar.Grid>
+                                                <Calendar.YearPickerGrid>
+                                                    <Calendar.YearPickerGridBody>{({ year }) => <Calendar.YearPickerCell year={year} />}</Calendar.YearPickerGridBody>
+                                                </Calendar.YearPickerGrid>
+                                            </Calendar>
+                                        </DatePicker.Popover>
                                         <FieldError>{errors.expiration_date}</FieldError>
-                                    </TextField>
+                                    </DatePicker>
                                 </div>
                                 <TextField className="col-span-2" value={data.description}
                                     onChange={v => setData("description", v)}
