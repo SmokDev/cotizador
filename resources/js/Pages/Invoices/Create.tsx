@@ -2,21 +2,10 @@ import { useState, useEffect } from "react";
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import axios from "axios";
 import {
-    Button,
-    Surface,
-    TextField,
-    Input,
-    TextArea,
-    Label,
-    FieldError,
-    NumberField,
-    ComboBox,
-    ListBox,
-    ListBoxItem,
-    DatePicker,
-    DateField,
-    Calendar,
+    Button, Surface, TextField, Input, TextArea, Label, FieldError,
+    NumberField, ComboBox, ListBox, ListBoxItem, DatePicker, DateField, Calendar,
 } from "@heroui/react";
+
 import { buttonVariants } from "@heroui/styles";
 import { ArrowLeft, Plus, Trash, Calculator, Download } from "lucide-react";
 import QuotationPreview from "@/components/QuotationPreview";
@@ -38,9 +27,13 @@ interface Client {
 interface Props {
     clients: Client[];
     invoice?: any;
+    paymentTerms?: string[];
+    configContact?: { name?: string; email?: string; phone?: string };
+    configLogo?: string;
+    accentColor?: string;
 }
 
-export default function Create({ clients, invoice }: Props) {
+export default function Create({ clients, invoice, paymentTerms = [], configContact = {}, configLogo, accentColor }: Props) {
     const isEditing = !!invoice;
     const [downloadProcessing, setDownloadProcessing] = useState(false);
 
@@ -59,11 +52,11 @@ export default function Create({ clients, invoice }: Props) {
                 .split("T")[0],
         notes: invoice?.notes ?? "",
         contact: {
-            name: invoice?.contact?.name ?? "",
-            email: invoice?.contact?.email ?? "",
-            phone: invoice?.contact?.phone ?? "",
+            name: invoice?.contact?.name ?? configContact?.name ?? "",
+            email: invoice?.contact?.email ?? configContact?.email ?? "",
+            phone: invoice?.contact?.phone ?? configContact?.phone ?? "",
         },
-        payment_terms: invoice?.payment_terms ?? "100% Anticipo",
+        payment_terms: invoice?.payment_terms ?? (paymentTerms[0] || "100% Anticipo"),
         delivery_label: invoice?.delivery_label ?? "Días hábiles",
         days_delivery: invoice?.days_delivery ?? 5,
         items: (invoice?.items ?? []).map((i: any) => ({
@@ -550,11 +543,18 @@ export default function Create({ clients, invoice }: Props) {
                                 Condiciones
                             </h2>
                             <div className="grid grid-cols-3 gap-3">
-                                <TextField
-                                    value={data.payment_terms}
-                                    onChange={(v) =>
-                                        setData("payment_terms", v)
-                                    }
+                                <ComboBox
+                                    className="w-full"
+                                    defaultInputValue={data.payment_terms}
+                                    allowsCustomValue
+                                    defaultFilter={(text, inputValue) => {
+                                        if (!inputValue) return true;
+                                        return text.toLowerCase().includes(inputValue.toLowerCase());
+                                    }}
+                                    onSelectionChange={(key) => {
+                                        if (key) setData("payment_terms", String(key));
+                                    }}
+                                    onInputChange={(v) => setData("payment_terms", v)}
                                     isInvalid={!!errors.payment_terms}
                                     isRequired
                                 >
@@ -562,11 +562,24 @@ export default function Create({ clients, invoice }: Props) {
                                         Términos de Pago{" "}
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input />
+                                    <ComboBox.InputGroup>
+                                        <Input placeholder="Escribe o selecciona..." />
+                                        <ComboBox.Trigger />
+                                    </ComboBox.InputGroup>
+                                    <ComboBox.Popover>
+                                        <ListBox>
+                                            {paymentTerms.map((term, i) => (
+                                                <ListBox.Item key={term} id={term} textValue={term}>
+                                                    {term}
+                                                    <ListBox.ItemIndicator />
+                                                </ListBox.Item>
+                                            ))}
+                                        </ListBox>
+                                    </ComboBox.Popover>
                                     <FieldError>
                                         {errors.payment_terms}
                                     </FieldError>
-                                </TextField>
+                                </ComboBox>
                                 <TextField
                                     value={data.delivery_label}
                                     onChange={(v) =>
@@ -889,6 +902,8 @@ export default function Create({ clients, invoice }: Props) {
                             days_delivery={data.days_delivery}
                             client_name={selectedClient?.name}
                             client_company={selectedClient?.company}
+                            logo={configLogo}
+                            accentColor={accentColor}
                         />
                     </div>
                 </div>

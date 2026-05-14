@@ -57,8 +57,16 @@ class InvoiceController extends Controller
     {
         $clients = Client::orderByRaw('last_used_at desc nulls last')->orderBy('name')->take(5)->get();
 
+        $config = self::loadConfig();
+        $paymentTerms = $config['payment_terms'] ?? [];
+        $configContact = $config['contact'] ?? [];
+
         return inertia('Invoices/Create', [
             'clients' => $clients,
+            'paymentTerms' => $paymentTerms,
+            'configContact' => $configContact,
+            'configLogo' => $config['logo'] ?? null,
+            'accentColor' => $config['color'] ?? '#b8860b',
         ]);
     }
 
@@ -113,7 +121,12 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         $invoice->load(['client', 'items']);
-        return inertia('Invoices/Show', ['invoice' => $invoice]);
+        $config = self::loadConfig();
+        return inertia('Invoices/Show', [
+            'invoice' => $invoice,
+            'configLogo' => $config['logo'] ?? null,
+            'accentColor' => $config['color'] ?? '#b8860b',
+        ]);
     }
 
     /**
@@ -122,9 +135,12 @@ class InvoiceController extends Controller
     public function downloadPdf(Invoice $invoice)
     {
         $invoice->load(['client', 'items']);
+        $config = self::loadConfig();
 
         $pdf = Pdf::loadView('pdf.quotation', [
             'invoice' => $invoice,
+            'logo' => $config['logo'] ?? null,
+            'accentColor' => $config['color'] ?? '#b8860b',
         ]);
 
         return $pdf->download("cotizacion-{$invoice->number}.pdf");
@@ -186,9 +202,17 @@ class InvoiceController extends Controller
             $clients->prepend($invoice->client);
         }
 
+        $config = self::loadConfig();
+        $paymentTerms = $config['payment_terms'] ?? [];
+        $configContact = $config['contact'] ?? [];
+
         return inertia('Invoices/Create', [
             'clients' => $clients,
             'invoice' => $invoice,
+            'paymentTerms' => $paymentTerms,
+            'configContact' => $configContact,
+            'configLogo' => $config['logo'] ?? null,
+            'accentColor' => $config['color'] ?? '#b8860b',
         ]);
     }
 
@@ -242,5 +266,12 @@ class InvoiceController extends Controller
         $invoice->delete();
 
         return redirect()->route('invoices.index');
+    }
+
+    private static function loadConfig(): array
+    {
+        $path = storage_path('app/config/quotations.json');
+        if (!file_exists($path)) return [];
+        return json_decode(file_get_contents($path), true) ?: [];
     }
 }

@@ -4,7 +4,7 @@ import { buttonVariants } from "@heroui/styles";
 import { ArrowLeft, Download } from "lucide-react";
 import QuotationPreview from "@/components/QuotationPreview";
 
-export default function Show({ invoice }: any) {
+export default function Show({ invoice, configLogo, accentColor }: any) {
     const contact = typeof invoice.contact === "string"
         ? JSON.parse(invoice.contact) : (invoice.contact || {});
 
@@ -48,6 +48,8 @@ export default function Show({ invoice }: any) {
                     days_delivery={Number(invoice.days_delivery)}
                     client_name={invoice.client?.name}
                     client_company={invoice.client?.company}
+                    logo={configLogo}
+                    accentColor={accentColor}
                 />
             </Surface>
         </div>
