@@ -70,18 +70,15 @@ body {
 /* CLIENT */
 
 .client-section {
-    margin: 0.5rem 0;
+    font-size: 1.125rem;
 }
 
 .client-name {
-    font-size: 1.125rem;
     font-weight: 700;
-    color: {{ $accent }};
+    margin-bottom: -1.25rem;
 }
 
-.client-company {
-    font-size: 1.125rem;
-}
+
 
 /* ITEMS */
 
@@ -113,27 +110,27 @@ body {
 }
 
 .items-header .c-desc {
-    width: 40%;
+    width: 60%;
     text-align: left;
 }
 
 .items-header .c-cant {
-    width: 15%;
+    width: 10%;
     text-align: center;
 }
 
 .items-header .c-pu {
-    width: 15%;
+    width: 10%;
     text-align: center;
 }
 
 .items-header .c-desc-pct {
-    width: 15%;
+    width: 10%;
     text-align: center;
 }
 
 .items-header .c-total {
-    width: 15%;
+    width: 10%;
     text-align: right;
 }
 
@@ -156,26 +153,26 @@ body {
 }
 
 .item-row .c-desc {
-    width: 40%;
+    width: 60%;
 }
 
 .item-row .c-cant {
-    width: 15%;
+    width: 10%;
     text-align: center;
 }
 
 .item-row .c-pu {
-    width: 15%;
+    width: 10%;
     text-align: center;
 }
 
 .item-row .c-desc-pct {
-    width: 15%;
+    width: 10%;
     text-align: center;
 }
 
 .item-row .c-total {
-    width: 15%;
+    width: 10%;
     text-align: right;
 }
 
@@ -183,7 +180,7 @@ body {
 
 .tt-wrap {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 2rem;
 }
 
 .tt-wrap:after {
@@ -249,7 +246,7 @@ body {
 
 .terms {
     display: table-cell;
-    width: 70%;
+    width: 65%;
     vertical-align: top;
     padding-right: 20px;
 
@@ -271,7 +268,7 @@ body {
 
 .totals-wrap {
     display: table-cell;
-    width: 30%;
+    width: 35%;
     vertical-align: top;
 }
 
@@ -396,7 +393,7 @@ body {
 
             {{-- TITLE --}}
             @if($invoice->title)
-                <p style="font-size:1rem; font-weight:700; margin:0; color:#4a4a4a;">{{ $invoice->title }}</p>
+                <p style="font-size:1.5rem; text-transform: uppercase; font-weight:700; margin:0; color:#4a4a4a;">{{ $invoice->title }}</p>
             @endif
 
             {{-- DESCRIPTION --}}
