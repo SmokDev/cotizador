@@ -13,7 +13,15 @@ class Client extends Model
     protected $fillable = [
         'name',
         'company',
+        'last_used_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'last_used_at' => 'datetime',
+        ];
+    }
 
     public function invoices(): HasMany
     {

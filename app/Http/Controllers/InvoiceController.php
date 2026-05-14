@@ -55,7 +55,7 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        $clients = Client::orderBy('name')->get();
+        $clients = Client::orderByRaw('last_used_at desc nulls last')->orderBy('name')->take(5)->get();
 
         return inertia('Invoices/Create', [
             'clients' => $clients,
@@ -87,8 +87,12 @@ class InvoiceController extends Controller
             'items.*.percent_discount'       => 'nullable|numeric',
         ]);
 
+        $validated['description'] ??= '';
+        $validated['notes'] ??= '';
+
         $invoice = DB::transaction(function () use ($validated) {
             $invoice = Invoice::create($validated);
+            Client::where('id', $validated['client_id'])->update(['last_used_at' => now()]);
 
             $items = collect($validated['items'])->map(function ($item) {
                 $item['percent_discount'] = $item['percent_discount'] ?? 0;
@@ -151,8 +155,13 @@ class InvoiceController extends Controller
             'items.*.percent_discount'       => 'nullable|numeric',
         ]);
 
+        $validated['description'] ??= '';
+        $validated['notes'] ??= '';
+
         $invoice = DB::transaction(function () use ($validated) {
             $invoice = Invoice::create($validated);
+            Client::where('id', $validated['client_id'])->update(['last_used_at' => now()]);
+
             $items = collect($validated['items'])->map(function ($item) {
                 $item['percent_discount'] = $item['percent_discount'] ?? 0;
                 return $item;
@@ -170,7 +179,12 @@ class InvoiceController extends Controller
     public function edit(Invoice $invoice)
     {
         $invoice->load(['client', 'items']);
-        $clients = Client::orderBy('name')->get();
+        $clients = Client::orderByRaw('last_used_at desc nulls last')->orderBy('name')->take(5)->get();
+
+        $hasClient = $clients->contains('id', $invoice->client_id);
+        if (!$hasClient && $invoice->client) {
+            $clients->prepend($invoice->client);
+        }
 
         return inertia('Invoices/Create', [
             'clients' => $clients,
@@ -184,6 +198,7 @@ class InvoiceController extends Controller
     public function update(Request $request, Invoice $invoice)
     {
         $validated = $request->validate([
+            'client_id'        => 'sometimes|required|exists:clients,id',
             'title'            => 'sometimes|required|string',
             'description'      => 'sometimes|required|string',
             'contact'          => 'sometimes|required|array',
@@ -196,7 +211,14 @@ class InvoiceController extends Controller
         ]);
 
         DB::transaction(function () use ($invoice, $validated) {
+            $oldClientId = $invoice->client_id;
             $invoice->update($validated);
+
+            $newClientId = $validated['client_id'] ?? $oldClientId;
+            if ($newClientId != $oldClientId) {
+                Client::where('id', $oldClientId)->update(['last_used_at' => null]);
+            }
+            Client::where('id', $newClientId)->update(['last_used_at' => now()]);
 
             if (isset($validated['items'])) {
                 $invoice->items()->delete();
