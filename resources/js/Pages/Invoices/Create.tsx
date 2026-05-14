@@ -2,20 +2,43 @@ import { useState, useEffect } from "react";
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import axios from "axios";
 import {
-    Button, Surface, TextField, Input, TextArea, Label, FieldError,
-    NumberField, Select, ListBox, ListBoxItem, DatePicker, DateField, Calendar,
+    Button,
+    Surface,
+    TextField,
+    Input,
+    TextArea,
+    Label,
+    FieldError,
+    NumberField,
+    ComboBox,
+    ListBox,
+    ListBoxItem,
+    DatePicker,
+    DateField,
+    Calendar,
 } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import { ArrowLeft, Plus, Trash, Calculator, Download } from "lucide-react";
 import QuotationPreview from "@/components/QuotationPreview";
 import CostProfitModal from "@/components/CostProfitModal";
-import { calculatorPrice, calculatorTotal, calculatorUnitPrice } from "@/utils/calculator";
+import {
+    calculatorPrice,
+    calculatorTotal,
+    calculatorUnitPrice,
+} from "@/utils/calculator";
 import { formatCurrency } from "@/utils/helpers";
 import { CalendarDate, parseDate } from "@internationalized/date";
 
-interface Client { id: number; name: string; company: string; }
+interface Client {
+    id: number;
+    name: string;
+    company: string;
+}
 
-interface Props { clients: Client[]; invoice?: any; }
+interface Props {
+    clients: Client[];
+    invoice?: any;
+}
 
 export default function Create({ clients, invoice }: Props) {
     const isEditing = !!invoice;
@@ -26,8 +49,14 @@ export default function Create({ clients, invoice }: Props) {
         title: invoice?.title ?? "",
         description: invoice?.description ?? "",
         number: invoice ? String(invoice.number) : "",
-        date: invoice?.date?.split?.("T")?.[0] ?? new Date().toISOString().split('T')[0],
-        expiration_date: invoice?.expiration_date?.split?.("T")?.[0] ?? new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        date:
+            invoice?.date?.split?.("T")?.[0] ??
+            new Date().toISOString().split("T")[0],
+        expiration_date:
+            invoice?.expiration_date?.split?.("T")?.[0] ??
+            new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
         notes: invoice?.notes ?? "",
         contact: {
             name: invoice?.contact?.name ?? "",
@@ -46,13 +75,25 @@ export default function Create({ clients, invoice }: Props) {
     });
 
     const [costModalIndex, setCostModalIndex] = useState<number | null>(null);
+    const [clientModalOpen, setClientModalOpen] = useState(false);
+    const [newClientName, setNewClientName] = useState("");
+    const [newClientCompany, setNewClientCompany] = useState("");
+    const [clientsList, setClientsList] = useState(clients);
 
     const toCalendarDate = (str: string) => {
-        try { return parseDate(str); } catch { return null; }
+        try {
+            return parseDate(str);
+        } catch {
+            return null;
+        }
     };
 
-    const [calDate, setCalDate] = useState<CalendarDate | null>(() => toCalendarDate(data.date));
-    const [calExpDate, setCalExpDate] = useState<CalendarDate | null>(() => toCalendarDate(data.expiration_date));
+    const [calDate, setCalDate] = useState<CalendarDate | null>(() =>
+        toCalendarDate(data.date),
+    );
+    const [calExpDate, setCalExpDate] = useState<CalendarDate | null>(() =>
+        toCalendarDate(data.expiration_date),
+    );
 
     const handleCalDateChange = (v: CalendarDate | null) => {
         setCalDate(v);
@@ -66,15 +107,33 @@ export default function Create({ clients, invoice }: Props) {
 
     useEffect(() => {
         if (data.items.length === 0 && !invoice) {
-            setData("items", [{ description: "", quantity: 1, unit_price: 0, percent_discount: 0 }]);
+            setData("items", [
+                {
+                    description: "",
+                    quantity: 1,
+                    unit_price: 0,
+                    percent_discount: 0,
+                },
+            ]);
         }
     }, []);
 
     const addItem = () =>
-        setData("items", [...data.items, { description: "", quantity: 1, unit_price: 0, percent_discount: 0 }]);
+        setData("items", [
+            ...data.items,
+            {
+                description: "",
+                quantity: 1,
+                unit_price: 0,
+                percent_discount: 0,
+            },
+        ]);
 
     const removeItem = (index: number) => {
-        setData("items", data.items.filter((_, i) => i !== index));
+        setData(
+            "items",
+            data.items.filter((_, i) => i !== index),
+        );
     };
 
     const updateItem = (index: number, field: string, value: any) => {
@@ -86,7 +145,10 @@ export default function Create({ clients, invoice }: Props) {
     const updateContact = (field: string, value: string) =>
         setData("contact", { ...data.contact, [field]: value });
 
-    const handleCostConfirm = (spents: { name: string; quantity: number }[], utility: number) => {
+    const handleCostConfirm = (
+        spents: { name: string; quantity: number }[],
+        utility: number,
+    ) => {
         if (costModalIndex === null) return;
         const item = data.items[costModalIndex];
         const total = spents.reduce((s, a) => s + (Number(a.quantity) || 0), 0);
@@ -94,6 +156,24 @@ export default function Create({ clients, invoice }: Props) {
         const qty = Number(item.quantity) || 1;
         updateItem(costModalIndex, "unit_price", { spents, utility });
         setCostModalIndex(null);
+    };
+
+    const handleCreateClient = async () => {
+        if (!newClientName.trim()) return;
+        try {
+            const res = await axios.post("/clients", {
+                name: newClientName,
+                company: newClientCompany,
+            });
+            const newClient = res.data;
+            setClientsList((prev) => [...prev, newClient]);
+            setData("client_id", String(newClient.id));
+            setNewClientName("");
+            setNewClientCompany("");
+            setClientModalOpen(false);
+        } catch {
+            /* ignore */
+        }
     };
 
     const handleClearPrice = () => {
@@ -114,7 +194,10 @@ export default function Create({ clients, invoice }: Props) {
     const handleDownload = async () => {
         setDownloadProcessing(true);
         try {
-            const response = await axios.post("/invoices/save-and-download", data);
+            const response = await axios.post(
+                "/invoices/save-and-download",
+                data,
+            );
             const invoiceId = response.data.id;
             window.open(`/invoices/${invoiceId}/pdf`, "_blank");
             router.visit("/invoices");
@@ -123,17 +206,24 @@ export default function Create({ clients, invoice }: Props) {
         }
     };
 
-    const results = data.items.map(item =>
-        calculatorPrice(item.quantity, item.unit_price, item.percent_discount)
+    const results = data.items.map((item) =>
+        calculatorPrice(item.quantity, item.unit_price, item.percent_discount),
     );
     const totals = calculatorTotal(results);
 
-    const selectedClient = clients.find(c => String(c.id) === data.client_id);
+    const selectedClient = clientsList.find((c) => String(c.id) === data.client_id);
 
-    const getUnitPriceFromObject = (unit_price: any, quantity: number): number => {
-        if (typeof unit_price !== "object" || unit_price === null) return Number(unit_price) || 0;
+    const getUnitPriceFromObject = (
+        unit_price: any,
+        quantity: number,
+    ): number => {
+        if (typeof unit_price !== "object" || unit_price === null)
+            return Number(unit_price) || 0;
         const spents = unit_price.spents || [];
-        const total = spents.reduce((s: number, a: any) => s + (Number(a.quantity) || 0), 0);
+        const total = spents.reduce(
+            (s: number, a: any) => s + (Number(a.quantity) || 0),
+            0,
+        );
         const perUnit = total * (1 + (unit_price.utility || 0) / 100);
         return quantity > 0 ? perUnit / quantity : perUnit;
     };
@@ -144,16 +234,42 @@ export default function Create({ clients, invoice }: Props) {
 
             <header className="shrink-0 px-6 py-3 border-b border-border flex items-center justify-between bg-surface">
                 <div className="flex items-center gap-3">
-                    <Link href="/invoices" className={buttonVariants({ variant: "tertiary", size: "sm" })}>
+                    <Link
+                        href="/invoices"
+                        className={buttonVariants({
+                            variant: "tertiary",
+                            size: "sm",
+                        })}
+                    >
                         <ArrowLeft size={18} />
                     </Link>
-                    <h1 className="text-lg font-bold">{isEditing ? `Editar Cotización #${invoice.number}` : "Nueva Cotización"}</h1>
+                    <h1 className="text-lg font-bold">
+                        {isEditing
+                            ? `Editar Cotización #${invoice.number}`
+                            : "Nueva Cotización"}
+                    </h1>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="secondary" size="sm" onPress={() => isEditing ? put(`/invoices/${invoice.id}`) : post("/invoices")} isLoading={processing}>
-                        {isEditing ? "Actualizar Cotización" : "Guardar Cotización"}
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onPress={() =>
+                            isEditing
+                                ? put(`/invoices/${invoice.id}`)
+                                : post("/invoices")
+                        }
+                        isLoading={processing}
+                    >
+                        {isEditing
+                            ? "Actualizar Cotización"
+                            : "Guardar Cotización"}
                     </Button>
-                    <Button variant="primary" size="sm" onPress={handleDownload} isLoading={processing || downloadProcessing}>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onPress={handleDownload}
+                        isLoading={processing || downloadProcessing}
+                    >
                         <Download size={16} /> Descargar PDF
                     </Button>
                 </div>
@@ -163,41 +279,109 @@ export default function Create({ clients, invoice }: Props) {
                 <div className="w-1/2 overflow-y-auto p-6 border-r border-border">
                     <form onSubmit={submitForm} className="flex flex-col gap-5">
                         <Surface className="p-5 flex flex-col gap-4">
-                            <h2 className="text-base font-semibold border-b pb-1">Información Básica</h2>
+                            <h2 className="text-base font-semibold border-b pb-1">
+                                Información Básica
+                            </h2>
                             <div className="grid grid-cols-2 gap-3">
-                                <TextField value={data.title} onChange={v => setData("title", v)}
-                                    isInvalid={!!errors.title} isRequired>
-                                    <Label>Título / Proyecto <span className="text-red-500">*</span></Label>
+                                <TextField
+                                    value={data.title}
+                                    onChange={(v) => setData("title", v)}
+                                    isInvalid={!!errors.title}
+                                    isRequired
+                                >
+                                    <Label>
+                                        Título / Proyecto{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input />
                                     <FieldError>{errors.title}</FieldError>
                                 </TextField>
-                                <TextField value={data.number} onChange={v => setData("number", v)}
-                                    isInvalid={!!errors.number} isRequired>
-                                    <Label>No. de Cotización <span className="text-red-500">*</span></Label>
+                                <TextField
+                                    value={data.number}
+                                    onChange={(v) => setData("number", v)}
+                                    isInvalid={!!errors.number}
+                                    isRequired
+                                >
+                                    <Label>
+                                        No. de Cotización{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input />
                                     <FieldError>{errors.number}</FieldError>
                                 </TextField>
-                                <Select selectedKey={data.client_id || null}
-                                    onSelectionChange={key => setData("client_id", String(key))}
-                                    isInvalid={!!errors.client_id} isRequired>
-                                    <Label>Cliente <span className="text-red-500">*</span></Label>
-                                    <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-                                    <FieldError>{errors.client_id}</FieldError>
-                                    <Select.Popover>
-                                        <ListBox>
-                                            {clients.map(c => (
-                                                <ListBoxItem key={c.id} id={String(c.id)} textValue={c.name}>
-                                                    {c.name} — {c.company}
-                                                </ListBoxItem>
-                                            ))}
-                                        </ListBox>
-                                    </Select.Popover>
-                                </Select>
+                                <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                        <ComboBox
+                                            selectedKey={data.client_id || null}
+                                            onSelectionChange={(key) =>
+                                                setData(
+                                                    "client_id",
+                                                    String(key),
+                                                )
+                                            }
+                                            isInvalid={!!errors.client_id}
+                                            isRequired
+                                        >
+                                            <Label>
+                                                Cliente{" "}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <ComboBox.InputGroup>
+                                                <Input placeholder="Buscar cliente..." />
+                                                <ComboBox.Trigger />
+                                            </ComboBox.InputGroup>
+                                            <ComboBox.Popover>
+                                                <ListBox>
+                                                    {clientsList.map((c) => (
+                                                        <ListBox.Item
+                                                            key={c.id}
+                                                            id={String(c.id)}
+                                                            textValue={c.name}
+                                                        >
+                                                            {c.name} —{" "}
+                                                            {c.company}
+                                                            <ListBox.ItemIndicator />
+                                                        </ListBox.Item>
+                                                    ))}
+                                                </ListBox>
+                                            </ComboBox.Popover>
+                                            <FieldError>
+                                                {errors.client_id}
+                                            </FieldError>
+                                        </ComboBox>
+                                    </div>
+                                    <Button
+                                        isIconOnly
+                                        size="sm"
+                                        variant="secondary"
+                                        onPress={() => setClientModalOpen(true)}
+                                    >
+                                        <Plus size={14} />
+                                    </Button>
+                                </div>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <DatePicker value={calDate} onChange={handleCalDateChange} isInvalid={!!errors.date} isRequired>
-                                        <Label>Fecha <span className="text-red-500">*</span></Label>
+                                    <DatePicker
+                                        value={calDate}
+                                        onChange={handleCalDateChange}
+                                        isInvalid={!!errors.date}
+                                        isRequired
+                                    >
+                                        <Label>
+                                            Fecha{" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
                                         <DateField.Group fullWidth>
-                                            <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
+                                            <DateField.Input>
+                                                {(segment) => (
+                                                    <DateField.Segment
+                                                        segment={segment}
+                                                    />
+                                                )}
+                                            </DateField.Input>
                                             <DateField.Suffix>
                                                 <DatePicker.Trigger>
                                                     <DatePicker.TriggerIndicator />
@@ -215,20 +399,54 @@ export default function Create({ clients, invoice }: Props) {
                                                     <Calendar.NavButton slot="next" />
                                                 </Calendar.Header>
                                                 <Calendar.Grid>
-                                                    <Calendar.GridHeader>{(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}</Calendar.GridHeader>
-                                                    <Calendar.GridBody>{(d) => <Calendar.Cell date={d} />}</Calendar.GridBody>
+                                                    <Calendar.GridHeader>
+                                                        {(day) => (
+                                                            <Calendar.HeaderCell>
+                                                                {day}
+                                                            </Calendar.HeaderCell>
+                                                        )}
+                                                    </Calendar.GridHeader>
+                                                    <Calendar.GridBody>
+                                                        {(d) => (
+                                                            <Calendar.Cell
+                                                                date={d}
+                                                            />
+                                                        )}
+                                                    </Calendar.GridBody>
                                                 </Calendar.Grid>
                                                 <Calendar.YearPickerGrid>
-                                                    <Calendar.YearPickerGridBody>{({ year }) => <Calendar.YearPickerCell year={year} />}</Calendar.YearPickerGridBody>
+                                                    <Calendar.YearPickerGridBody>
+                                                        {({ year }) => (
+                                                            <Calendar.YearPickerCell
+                                                                year={year}
+                                                            />
+                                                        )}
+                                                    </Calendar.YearPickerGridBody>
                                                 </Calendar.YearPickerGrid>
                                             </Calendar>
                                         </DatePicker.Popover>
                                         <FieldError>{errors.date}</FieldError>
                                     </DatePicker>
-                                    <DatePicker value={calExpDate} onChange={handleCalExpDateChange} isInvalid={!!errors.expiration_date} isRequired>
-                                        <Label>Expiración <span className="text-red-500">*</span></Label>
+                                    <DatePicker
+                                        value={calExpDate}
+                                        onChange={handleCalExpDateChange}
+                                        isInvalid={!!errors.expiration_date}
+                                        isRequired
+                                    >
+                                        <Label>
+                                            Expiración{" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
                                         <DateField.Group fullWidth>
-                                            <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
+                                            <DateField.Input>
+                                                {(segment) => (
+                                                    <DateField.Segment
+                                                        segment={segment}
+                                                    />
+                                                )}
+                                            </DateField.Input>
                                             <DateField.Suffix>
                                                 <DatePicker.Trigger>
                                                     <DatePicker.TriggerIndicator />
@@ -246,78 +464,158 @@ export default function Create({ clients, invoice }: Props) {
                                                     <Calendar.NavButton slot="next" />
                                                 </Calendar.Header>
                                                 <Calendar.Grid>
-                                                    <Calendar.GridHeader>{(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}</Calendar.GridHeader>
-                                                    <Calendar.GridBody>{(d) => <Calendar.Cell date={d} />}</Calendar.GridBody>
+                                                    <Calendar.GridHeader>
+                                                        {(day) => (
+                                                            <Calendar.HeaderCell>
+                                                                {day}
+                                                            </Calendar.HeaderCell>
+                                                        )}
+                                                    </Calendar.GridHeader>
+                                                    <Calendar.GridBody>
+                                                        {(d) => (
+                                                            <Calendar.Cell
+                                                                date={d}
+                                                            />
+                                                        )}
+                                                    </Calendar.GridBody>
                                                 </Calendar.Grid>
                                                 <Calendar.YearPickerGrid>
-                                                    <Calendar.YearPickerGridBody>{({ year }) => <Calendar.YearPickerCell year={year} />}</Calendar.YearPickerGridBody>
+                                                    <Calendar.YearPickerGridBody>
+                                                        {({ year }) => (
+                                                            <Calendar.YearPickerCell
+                                                                year={year}
+                                                            />
+                                                        )}
+                                                    </Calendar.YearPickerGridBody>
                                                 </Calendar.YearPickerGrid>
                                             </Calendar>
                                         </DatePicker.Popover>
-                                        <FieldError>{errors.expiration_date}</FieldError>
+                                        <FieldError>
+                                            {errors.expiration_date}
+                                        </FieldError>
                                     </DatePicker>
                                 </div>
-                                <TextField className="col-span-2" value={data.description}
-                                    onChange={v => setData("description", v)}
-                                    isInvalid={!!errors.description}>
+                                <TextField
+                                    className="col-span-2"
+                                    value={data.description}
+                                    onChange={(v) => setData("description", v)}
+                                    isInvalid={!!errors.description}
+                                >
                                     <Label>Descripción</Label>
                                     <TextArea className="min-h-[60px]" />
-                                    <FieldError>{errors.description}</FieldError>
+                                    <FieldError>
+                                        {errors.description}
+                                    </FieldError>
                                 </TextField>
                             </div>
                         </Surface>
 
                         <Surface className="p-5 flex flex-col gap-4">
-                            <h2 className="text-base font-semibold border-b pb-1">Contacto</h2>
+                            <h2 className="text-base font-semibold border-b pb-1">
+                                Contacto
+                            </h2>
                             <div className="grid grid-cols-3 gap-3">
-                                <TextField value={data.contact.name} onChange={v => updateContact("name", v)}>
+                                <TextField
+                                    value={data.contact.name}
+                                    onChange={(v) => updateContact("name", v)}
+                                >
                                     <Label>Nombre</Label>
                                     <Input />
                                 </TextField>
-                                <TextField type="email" value={data.contact.email}
-                                    onChange={v => updateContact("email", v)}>
+                                <TextField
+                                    type="email"
+                                    value={data.contact.email}
+                                    onChange={(v) => updateContact("email", v)}
+                                >
                                     <Label>Correo Electrónico</Label>
                                     <Input />
                                 </TextField>
-                                <TextField value={data.contact.phone} onChange={v => updateContact("phone", v)}>
+                                <TextField
+                                    value={data.contact.phone}
+                                    onChange={(v) => updateContact("phone", v)}
+                                >
                                     <Label>Teléfono</Label>
                                     <Input />
                                 </TextField>
                             </div>
-                            {errors.contact && <span className="text-red-500 text-xs">{errors.contact}</span>}
+                            {errors.contact && (
+                                <span className="text-red-500 text-xs">
+                                    {errors.contact}
+                                </span>
+                            )}
                         </Surface>
 
                         <Surface className="p-5 flex flex-col gap-4">
-                            <h2 className="text-base font-semibold border-b pb-1">Condiciones</h2>
+                            <h2 className="text-base font-semibold border-b pb-1">
+                                Condiciones
+                            </h2>
                             <div className="grid grid-cols-3 gap-3">
-                                <TextField value={data.payment_terms}
-                                    onChange={v => setData("payment_terms", v)}
-                                    isInvalid={!!errors.payment_terms} isRequired>
-                                    <Label>Términos de Pago <span className="text-red-500">*</span></Label>
+                                <TextField
+                                    value={data.payment_terms}
+                                    onChange={(v) =>
+                                        setData("payment_terms", v)
+                                    }
+                                    isInvalid={!!errors.payment_terms}
+                                    isRequired
+                                >
+                                    <Label>
+                                        Términos de Pago{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input />
-                                    <FieldError>{errors.payment_terms}</FieldError>
+                                    <FieldError>
+                                        {errors.payment_terms}
+                                    </FieldError>
                                 </TextField>
-                                <TextField value={data.delivery_label}
-                                    onChange={v => setData("delivery_label", v)}
-                                    isInvalid={!!errors.delivery_label} isRequired>
-                                    <Label>Etiqueta de Entrega <span className="text-red-500">*</span></Label>
+                                <TextField
+                                    value={data.delivery_label}
+                                    onChange={(v) =>
+                                        setData("delivery_label", v)
+                                    }
+                                    isInvalid={!!errors.delivery_label}
+                                    isRequired
+                                >
+                                    <Label>
+                                        Etiqueta de Entrega{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input placeholder="Ej. Días hábiles" />
-                                    <FieldError>{errors.delivery_label}</FieldError>
+                                    <FieldError>
+                                        {errors.delivery_label}
+                                    </FieldError>
                                 </TextField>
-                                <NumberField value={data.days_delivery}
-                                    onChange={v => setData("days_delivery", v)}
-                                    isInvalid={!!errors.days_delivery} isRequired minValue={0}>
-                                    <Label>Días de Entrega <span className="text-red-500">*</span></Label>
+                                <NumberField
+                                    value={data.days_delivery}
+                                    onChange={(v) =>
+                                        setData("days_delivery", v)
+                                    }
+                                    isInvalid={!!errors.days_delivery}
+                                    isRequired
+                                    minValue={0}
+                                >
+                                    <Label>
+                                        Días de Entrega{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <NumberField.Group>
-                                        <NumberField.DecrementButton>-</NumberField.DecrementButton>
+                                        <NumberField.DecrementButton>
+                                            -
+                                        </NumberField.DecrementButton>
                                         <NumberField.Input />
-                                        <NumberField.IncrementButton>+</NumberField.IncrementButton>
+                                        <NumberField.IncrementButton>
+                                            +
+                                        </NumberField.IncrementButton>
                                     </NumberField.Group>
-                                    <FieldError>{errors.days_delivery}</FieldError>
+                                    <FieldError>
+                                        {errors.days_delivery}
+                                    </FieldError>
                                 </NumberField>
                             </div>
-                            <TextField value={data.notes} onChange={v => setData("notes", v)}
-                                isInvalid={!!errors.notes}>
+                            <TextField
+                                value={data.notes}
+                                onChange={(v) => setData("notes", v)}
+                                isInvalid={!!errors.notes}
+                            >
                                 <Label>Notas adicionales</Label>
                                 <TextArea className="min-h-[80px]" />
                                 <FieldError>{errors.notes}</FieldError>
@@ -326,83 +624,206 @@ export default function Create({ clients, invoice }: Props) {
 
                         <Surface className="p-5 flex flex-col gap-3">
                             <div className="flex justify-between items-center border-b pb-1">
-                                <h2 className="text-base font-semibold">Ítems</h2>
-                                <Button type="button" variant="secondary" size="sm" onPress={addItem}>
+                                <h2 className="text-base font-semibold">
+                                    Ítems
+                                </h2>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onPress={addItem}
+                                >
                                     <Plus size={14} /> Agregar
                                 </Button>
                             </div>
-                            {typeof errors.items === 'string' && (
-                                <span className="text-red-500 text-xs">{errors.items}</span>
+                            {typeof errors.items === "string" && (
+                                <span className="text-red-500 text-xs">
+                                    {errors.items}
+                                </span>
                             )}
                             <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
                                 {data.items.map((item, i) => (
-                                    <div key={i} className="relative border border-border rounded-lg p-3">
+                                    <div
+                                        key={i}
+                                        className="relative border border-border rounded-lg p-3"
+                                    >
                                         {data.items.length > 1 && (
-                                            <Button isIconOnly size="sm" variant="danger" type="button"
+                                            <Button
+                                                isIconOnly
+                                                size="sm"
+                                                variant="danger"
+                                                type="button"
                                                 className="absolute top-2 right-2"
-                                                onPress={() => removeItem(i)}>
+                                                onPress={() => removeItem(i)}
+                                            >
                                                 <Trash size={14} />
                                             </Button>
                                         )}
                                         <div className="flex flex-col gap-2">
-                                            <TextField value={item.description}
-                                                onChange={v => updateItem(i, "description", v)}
-                                                isInvalid={!!errors[`items.${i}.description`]} isRequired>
-                                                <Label>Descripción <span className="text-red-500">*</span></Label>
+                                            <TextField
+                                                value={item.description}
+                                                onChange={(v) =>
+                                                    updateItem(
+                                                        i,
+                                                        "description",
+                                                        v,
+                                                    )
+                                                }
+                                                isInvalid={
+                                                    !!errors[
+                                                        `items.${i}.description`
+                                                    ]
+                                                }
+                                                isRequired
+                                            >
+                                                <Label>
+                                                    Descripción{" "}
+                                                    <span className="text-red-500">
+                                                        *
+                                                    </span>
+                                                </Label>
                                                 <Input />
-                                                <FieldError>{errors[`items.${i}.description`]}</FieldError>
+                                                <FieldError>
+                                                    {
+                                                        errors[
+                                                            `items.${i}.description`
+                                                        ]
+                                                    }
+                                                </FieldError>
                                             </TextField>
                                             <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
                                                 <div className="min-w-0">
-                                                    <NumberField value={item.quantity}
-                                                        onChange={v => updateItem(i, "quantity", v)}
-                                                        isInvalid={!!errors[`items.${i}.quantity`]} isRequired minValue={0}>
+                                                    <NumberField
+                                                        value={item.quantity}
+                                                        onChange={(v) =>
+                                                            updateItem(
+                                                                i,
+                                                                "quantity",
+                                                                v,
+                                                            )
+                                                        }
+                                                        isInvalid={
+                                                            !!errors[
+                                                                `items.${i}.quantity`
+                                                            ]
+                                                        }
+                                                        isRequired
+                                                        minValue={0}
+                                                    >
                                                         <Label>Cant.</Label>
                                                         <NumberField.Group>
-                                                            <NumberField.DecrementButton>-</NumberField.DecrementButton>
+                                                            <NumberField.DecrementButton>
+                                                                -
+                                                            </NumberField.DecrementButton>
                                                             <NumberField.Input />
-                                                            <NumberField.IncrementButton>+</NumberField.IncrementButton>
+                                                            <NumberField.IncrementButton>
+                                                                +
+                                                            </NumberField.IncrementButton>
                                                         </NumberField.Group>
-                                                        <FieldError>{errors[`items.${i}.quantity`]}</FieldError>
+                                                        <FieldError>
+                                                            {
+                                                                errors[
+                                                                    `items.${i}.quantity`
+                                                                ]
+                                                            }
+                                                        </FieldError>
                                                     </NumberField>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    {typeof item.unit_price === "object" ? (
-                                                        <TextField value={`$${formatCurrency(getUnitPriceFromObject(item.unit_price, Number(item.quantity) || 1))}`} isDisabled isRequired>
-                                                            <Label>P. Unitario</Label>
+                                                    {typeof item.unit_price ===
+                                                    "object" ? (
+                                                        <TextField
+                                                            value={`$${formatCurrency(getUnitPriceFromObject(item.unit_price, Number(item.quantity) || 1))}`}
+                                                            isDisabled
+                                                            isRequired
+                                                        >
+                                                            <Label>
+                                                                P. Unitario
+                                                            </Label>
                                                             <Input />
                                                         </TextField>
                                                     ) : (
-                                                        <NumberField value={item.unit_price}
-                                                            onChange={v => updateItem(i, "unit_price", v)}
-                                                            isInvalid={!!errors[`items.${i}.unit_price`]}
-                                                            isRequired minValue={0} step={1}
-                                                            formatOptions={{ style: "decimal", minimumFractionDigits: 2 }}>
+                                                        <NumberField
+                                                            value={
+                                                                item.unit_price
+                                                            }
+                                                            onChange={(v) =>
+                                                                updateItem(
+                                                                    i,
+                                                                    "unit_price",
+                                                                    v,
+                                                                )
+                                                            }
+                                                            isInvalid={
+                                                                !!errors[
+                                                                    `items.${i}.unit_price`
+                                                                ]
+                                                            }
+                                                            isRequired
+                                                            minValue={0}
+                                                            step={1}
+                                                            formatOptions={{
+                                                                style: "decimal",
+                                                                minimumFractionDigits: 2,
+                                                            }}
+                                                        >
                                                             <Label>P/U</Label>
                                                             <NumberField.Group>
-                                                                <NumberField.DecrementButton>-</NumberField.DecrementButton>
+                                                                <NumberField.DecrementButton>
+                                                                    -
+                                                                </NumberField.DecrementButton>
                                                                 <NumberField.Input />
-                                                                <NumberField.IncrementButton>+</NumberField.IncrementButton>
+                                                                <NumberField.IncrementButton>
+                                                                    +
+                                                                </NumberField.IncrementButton>
                                                             </NumberField.Group>
-                                                            <FieldError>{errors[`items.${i}.unit_price`]}</FieldError>
+                                                            <FieldError>
+                                                                {
+                                                                    errors[
+                                                                        `items.${i}.unit_price`
+                                                                    ]
+                                                                }
+                                                            </FieldError>
                                                         </NumberField>
                                                     )}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <NumberField value={item.percent_discount}
-                                                        onChange={v => updateItem(i, "percent_discount", v)}
-                                                        minValue={0} maxValue={100}>
+                                                    <NumberField
+                                                        value={
+                                                            item.percent_discount
+                                                        }
+                                                        onChange={(v) =>
+                                                            updateItem(
+                                                                i,
+                                                                "percent_discount",
+                                                                v,
+                                                            )
+                                                        }
+                                                        minValue={0}
+                                                        maxValue={100}
+                                                    >
                                                         <Label>Desc.%</Label>
                                                         <NumberField.Group>
-                                                            <NumberField.DecrementButton>-</NumberField.DecrementButton>
+                                                            <NumberField.DecrementButton>
+                                                                -
+                                                            </NumberField.DecrementButton>
                                                             <NumberField.Input />
-                                                            <NumberField.IncrementButton>+</NumberField.IncrementButton>
+                                                            <NumberField.IncrementButton>
+                                                                +
+                                                            </NumberField.IncrementButton>
                                                         </NumberField.Group>
                                                     </NumberField>
                                                 </div>
                                                 <div className="flex-none pb-1">
-                                                    <Button isIconOnly size="sm" variant="tertiary" type="button"
-                                                        onPress={() => setCostModalIndex(i)}>
+                                                    <Button
+                                                        isIconOnly
+                                                        size="sm"
+                                                        variant="tertiary"
+                                                        type="button"
+                                                        onPress={() =>
+                                                            setCostModalIndex(i)
+                                                        }
+                                                    >
                                                         <Calculator size={14} />
                                                     </Button>
                                                 </div>
@@ -414,12 +835,40 @@ export default function Create({ clients, invoice }: Props) {
                         </Surface>
 
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
-                            <div className="flex justify-between"><span>Subtotal:</span><span className="font-semibold">${formatCurrency(totals.subtotalWithoutDiscount)}</span></div>
-                            <div className="flex justify-between"><span>Descuento:</span><span className="font-semibold">${formatCurrency(totals.discount)}</span></div>
-                            <div className="flex justify-between"><span>Subtotal con Desc.:</span><span className="font-semibold">${formatCurrency(totals.subtotal)}</span></div>
-                            <div className="flex justify-between"><span>IVA (16%):</span><span className="font-semibold">${formatCurrency(totals.iva)}</span></div>
+                            <div className="flex justify-between">
+                                <span>Subtotal:</span>
+                                <span className="font-semibold">
+                                    $
+                                    {formatCurrency(
+                                        totals.subtotalWithoutDiscount,
+                                    )}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Descuento:</span>
+                                <span className="font-semibold">
+                                    ${formatCurrency(totals.discount)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Subtotal con Desc.:</span>
+                                <span className="font-semibold">
+                                    ${formatCurrency(totals.subtotal)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>IVA (16%):</span>
+                                <span className="font-semibold">
+                                    ${formatCurrency(totals.iva)}
+                                </span>
+                            </div>
                             <hr className="my-1.5 border-amber-200" />
-                            <div className="flex justify-between font-bold text-base"><span>Total:</span><span className="text-amber-700">${formatCurrency(totals.total)}</span></div>
+                            <div className="flex justify-between font-bold text-base">
+                                <span>Total:</span>
+                                <span className="text-amber-700">
+                                    ${formatCurrency(totals.total)}
+                                </span>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -450,13 +899,70 @@ export default function Create({ clients, invoice }: Props) {
                 onClose={() => setCostModalIndex(null)}
                 onConfirm={handleCostConfirm}
                 onClear={handleClearPrice}
-                hasLockedPrice={costModalIndex !== null && typeof data.items[costModalIndex]?.unit_price === "object"}
-                initialSpents={costModalIndex !== null && typeof data.items[costModalIndex]?.unit_price === "object"
-                    ? data.items[costModalIndex].unit_price.spents : undefined}
-                initialUtility={costModalIndex !== null && typeof data.items[costModalIndex]?.unit_price === "object"
-                    ? data.items[costModalIndex].unit_price.utility : undefined}
+                hasLockedPrice={
+                    costModalIndex !== null &&
+                    typeof data.items[costModalIndex]?.unit_price === "object"
+                }
+                initialSpents={
+                    costModalIndex !== null &&
+                    typeof data.items[costModalIndex]?.unit_price === "object"
+                        ? data.items[costModalIndex].unit_price.spents
+                        : undefined
+                }
+                initialUtility={
+                    costModalIndex !== null &&
+                    typeof data.items[costModalIndex]?.unit_price === "object"
+                        ? data.items[costModalIndex].unit_price.utility
+                        : undefined
+                }
             />
+
+            {clientModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                        className="fixed inset-0 bg-black/40"
+                        onClick={() => setClientModalOpen(false)}
+                    />
+                    <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+                        <div className="p-5 border-b">
+                            <h2 className="text-lg font-bold">Nuevo Cliente</h2>
+                        </div>
+                        <div className="p-5 flex flex-col gap-4">
+                            <TextField
+                                value={newClientName}
+                                onChange={setNewClientName}
+                            >
+                                <Label>
+                                    Nombre{" "}
+                                    <span className="text-red-500">*</span>
+                                </Label>
+                                <Input placeholder="Nombre del cliente" />
+                            </TextField>
+                            <TextField
+                                value={newClientCompany}
+                                onChange={setNewClientCompany}
+                            >
+                                <Label>Empresa</Label>
+                                <Input placeholder="Nombre de la empresa" />
+                            </TextField>
+                        </div>
+                        <div className="flex justify-end gap-2 p-5 border-t">
+                            <Button
+                                variant="tertiary"
+                                onPress={() => setClientModalOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onPress={handleCreateClient}
+                            >
+                                Crear Cliente
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-
