@@ -5,7 +5,7 @@ import {
     ColorField, ColorSwatch,
 } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
-import { ArrowLeft, Plus, Trash, Save, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Trash, Save, Upload, XCircle } from "lucide-react";
 import axios from "axios";
 
 interface Props {
@@ -99,7 +99,14 @@ export default function Config({ config }: Props) {
                     <h2 className="text-lg font-semibold border-b pb-2">Logo</h2>
                     <div className="flex items-end gap-4">
                         {logoPreview && (
-                            <img src={logoPreview} alt="Logo" className="h-16 w-auto object-contain border rounded-lg p-1" />
+                            <div className="relative">
+                                <img src={logoPreview} alt="Logo" className="h-16 w-auto object-contain border rounded-lg p-1" />
+                                <Button isIconOnly size="sm" variant="danger"
+                                    className="absolute -top-2 -right-2 min-w-0 h-5 w-5 rounded-full"
+                                    onPress={() => { setLogoPreview(""); setLogoFile(null); }}>
+                                    <XCircle size={14} />
+                                </Button>
+                            </div>
                         )}
                         <div className="flex flex-col gap-2">
                             <Button variant="secondary" onPress={() => fileInputRef.current?.click()}>
