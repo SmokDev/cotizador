@@ -373,7 +373,7 @@ body {
                     @endif
                 </div>
                 <div class="header-info">
-                    <p><strong>No. de Cotización:</strong> {{ $invoice->number }}</p>
+                    <p><strong>No. de Cotización:</strong> {{ str_pad($invoice->id, 4, '0', STR_PAD_LEFT) }}</p>
                     <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($invoice->date)->format('d/m/Y') }}</p>
                     @if($invoice->expiration_date)
                         <p><strong>Vigencia:</strong> {{ \Carbon\Carbon::parse($invoice->expiration_date)->format('d/m/Y') }}</p>

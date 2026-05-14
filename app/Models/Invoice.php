@@ -15,7 +15,6 @@ class Invoice extends Model
         'client_id',
         'title',
         'description',
-        'number',
         'date',
         'expiration_date',
         'notes',
@@ -30,8 +29,7 @@ class Invoice extends Model
         return [
             'date' => 'date',
             'expiration_date' => 'date',
-            'contact' => 'array', 
-            'number' => 'integer',
+            'contact' => 'array',
             'days_delivery' => 'integer',
         ];
     }

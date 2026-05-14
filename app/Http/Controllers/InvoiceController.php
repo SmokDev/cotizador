@@ -79,7 +79,6 @@ class InvoiceController extends Controller
             'client_id'            => 'required|exists:clients,id',
             'title'                => 'required|string',
             'description'          => 'nullable|string',
-            'number'               => 'required|integer|unique:invoices',
             'date'                 => 'required|date',
             'expiration_date'      => 'required|date',
             'notes'                => 'nullable|string',
@@ -143,7 +142,7 @@ class InvoiceController extends Controller
             'accentColor' => $config['color'] ?? '#b8860b',
         ]);
 
-        return $pdf->download("cotizacion-{$invoice->number}.pdf");
+        return $pdf->download("cotizacion-{$invoice->id}.pdf");
     }
 
     /**
@@ -155,7 +154,6 @@ class InvoiceController extends Controller
             'client_id'            => 'required|exists:clients,id',
             'title'                => 'required|string',
             'description'          => 'nullable|string',
-            'number'               => 'required|integer|unique:invoices',
             'date'                 => 'required|date',
             'expiration_date'      => 'required|date',
             'notes'                => 'nullable|string',

@@ -10,14 +10,14 @@ export default function Show({ invoice, configLogo, accentColor }: any) {
 
     return (
         <div className="min-h-screen bg-background p-8">
-            <Head title={`Cotización ${invoice.number}`} />
+            <Head title={`Cotización ${String(invoice.id).padStart(4, "0")}`} />
 
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <Link href="/invoices" className={buttonVariants({ variant: "tertiary" })}>
                         <ArrowLeft size={20} /> Volver
                     </Link>
-                    <h1 className="text-2xl font-bold">Cotización #{invoice.number}</h1>
+                    <h1 className="text-2xl font-bold">Cotización #{String(invoice.id).padStart(4, "0")}</h1>
                 </div>
                 <Link href={`/invoices/${invoice.id}/pdf`} className={buttonVariants({ variant: "primary" })}>
                     <Download size={16} /> Descargar PDF
@@ -27,7 +27,7 @@ export default function Show({ invoice, configLogo, accentColor }: any) {
             <Surface className="p-6">
                 <QuotationPreview
                     title={invoice.title}
-                    number={String(invoice.number)}
+                    number={String(invoice.id).padStart(4, "0")}
                     date={invoice.date}
                     expiration_date={invoice.expiration_date}
                     description={invoice.description}

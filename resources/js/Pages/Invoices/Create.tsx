@@ -41,7 +41,7 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
         client_id: invoice ? String(invoice.client_id) : "",
         title: invoice?.title ?? "",
         description: invoice?.description ?? "",
-        number: invoice ? String(invoice.number) : "",
+        number: invoice ? String(invoice.id).padStart(4, "0") : "",
         date:
             invoice?.date?.split?.("T")?.[0] ??
             new Date().toISOString().split("T")[0],
@@ -238,7 +238,7 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                     </Link>
                     <h1 className="text-lg font-bold">
                         {isEditing
-                            ? `Editar Cotización #${invoice.number}`
+                            ? `Editar Cotización #${String(invoice.id).padStart(4, "0")}`
                             : "Nueva Cotización"}
                     </h1>
                 </div>
@@ -289,19 +289,7 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                                     <Input />
                                     <FieldError>{errors.title}</FieldError>
                                 </TextField>
-                                <TextField
-                                    value={data.number}
-                                    onChange={(v) => setData("number", v)}
-                                    isInvalid={!!errors.number}
-                                    isRequired
-                                >
-                                    <Label>
-                                        No. de Cotización{" "}
-                                        <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input />
-                                    <FieldError>{errors.number}</FieldError>
-                                </TextField>
+
                                 <div className="flex gap-2 items-end">
                                     <div className="flex-1">
                                         <ComboBox
@@ -890,7 +878,7 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                     <div className="w-full max-w-[816px]">
                         <QuotationPreview
                             title={data.title}
-                            number={data.number}
+                            number={data.number || "---"}
                             date={data.date}
                             expiration_date={data.expiration_date}
                             description={data.description}

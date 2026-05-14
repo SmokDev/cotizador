@@ -10,7 +10,7 @@ export function InvoicesTableRow({ invoice}: { invoice: any}) {
     const result = calculatorTotal(invoice.items.map((item: any) => calculatorPrice(item.quantity, item.unit_price, item.percent_discount)));
     return (
         <Table.Row>
-          <Table.Cell className="w-30 text-left">{invoice.number}</Table.Cell>
+          <Table.Cell className="w-30 text-left">{String(invoice.id).padStart(4, "0")}</Table.Cell>
           <Table.Cell><div className="flex flex-col">
               <span className="text-xs">{invoice.client.name}</span>
               <span className="text-xs text-muted">{invoice.client.company}</span>
