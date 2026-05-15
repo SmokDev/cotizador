@@ -410,13 +410,20 @@ body {
                 $totalFinal = 0;
             @endphp
 
+            @php
+                $hasDiscount = $invoice->items->contains(function ($item) {
+                    return (float)($item->percent_discount ?? 0) > 0;
+                });
+            @endphp
             <div class="items-wrap">
                 <div class="items-header">
-                    <div class="col c-desc">Descripción</div>
-                    <div class="col c-cant">Cantidad</div>
-                    <div class="col c-pu">P/U</div>
-                    <div class="col c-desc-pct">Desc.</div>
-                    <div class="col c-total">Total</div>
+                    <div class="col" style="{{ $hasDiscount ? 'width:55%' : 'width:65%' }}; text-align:left;">Descripción</div>
+                    <div class="col" style="width:10%; text-align:center;">Cantidad</div>
+                    <div class="col" style="width:10%; text-align:center;">P/U</div>
+                    @if($hasDiscount)
+                    <div class="col" style="width:10%; text-align:center;">Desc.</div>
+                    @endif
+                    <div class="col" style="width:15%; text-align:right;">Total</div>
                 </div>
 
                 @foreach($invoice->items as $item)
@@ -447,11 +454,13 @@ body {
                     $totalFinal += $lineTotal;
                 @endphp
                 <div class="item-row">
-                    <div class="col c-desc">{{ $item->description }}</div>
-                    <div class="col c-cant">{{ number_format($qty, 2) }}</div>
-                    <div class="col c-pu">${{ number_format($unitPriceValue, 2) }}</div>
-                    <div class="col c-desc-pct">{{ $discountPct > 0 ? $discountPct . '%' : '-' }}</div>
-                    <div class="col c-total">${{ number_format($lineSubtotal, 2) }}</div>
+                    <div class="col" style="{{ $hasDiscount ? 'width:55%' : 'width:65%' }}">{{ $item->description }}</div>
+                    <div class="col" style="width:10%; text-align:center;">{{ number_format($qty, 2) }}</div>
+                    <div class="col" style="width:10%; text-align:center;">${{ number_format($unitPriceValue, 2) }}</div>
+                    @if($hasDiscount)
+                    <div class="col" style="width:10%; text-align:center;">{{ $discountPct > 0 ? $discountPct . '%' : '-' }}</div>
+                    @endif
+                    <div class="col" style="width:15%; text-align:right;">${{ number_format($lineSubtotal, 2) }}</div>
                 </div>
                 @endforeach
             </div>

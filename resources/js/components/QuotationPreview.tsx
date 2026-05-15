@@ -63,6 +63,11 @@ export default function QuotationPreview({
     );
     const totals = calculatorTotal(results);
 
+    const hasDiscount = items.some(
+        (item) => Number(item.percent_discount) > 0,
+    );
+    const descSpan = hasDiscount ? 8 : 11;
+
     const unitPriceValue = (unit_price: any, quantity: number): number => {
         if (typeof unit_price === "object" && unit_price !== null) {
             const spents = unit_price.spents || [];
@@ -220,7 +225,7 @@ export default function QuotationPreview({
                 >
                     <p
                         style={{
-                            gridColumn: "span 8",
+                            gridColumn: `span ${descSpan}`,
                             textAlign: "left",
                             margin: 0,
                         }}
@@ -245,15 +250,17 @@ export default function QuotationPreview({
                     >
                         P/U
                     </p>
-                    <p
-                        style={{
-                            gridColumn: "span 3",
-                            textAlign: "center",
-                            margin: 0,
-                        }}
-                    >
-                        Desc.
-                    </p>
+                    {hasDiscount && (
+                        <p
+                            style={{
+                                gridColumn: "span 3",
+                                textAlign: "center",
+                                margin: 0,
+                            }}
+                        >
+                            Desc.
+                        </p>
+                    )}
                     <p
                         style={{
                             gridColumn: "span 3",
@@ -269,7 +276,7 @@ export default function QuotationPreview({
                     <div key={i} style={tableRow(accentColor)}>
                         <div
                             style={{
-                                gridColumn: "span 8",
+                                gridColumn: `span ${descSpan}`,
                                 display: "flex",
                                 alignItems: "center",
                                 color: "#3a3a3a",
@@ -302,19 +309,21 @@ export default function QuotationPreview({
                                 unitPriceValue(item.unit_price, item.quantity),
                             )}
                         </div>
-                        <div
-                            style={{
-                                gridColumn: "span 3",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                color: "#3a3a3a",
-                            }}
-                        >
-                            {item.percent_discount
+                        {hasDiscount && (
+                            <div
+                                style={{
+                                    gridColumn: "span 3",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    color: "#3a3a3a",
+                                }}
+                            >
+                                {item.percent_discount
                                 ? `${item.percent_discount}%`
                                 : "-"}
-                        </div>
+                            </div>
+                        )}
                         <div
                             style={{
                                 gridColumn: "span 3",
