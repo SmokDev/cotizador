@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class InvoiceItem extends Model
+class QuotationItem extends Model
 {
     use HasFactory;
 
+    protected $table = 'quotation_items';
+
     protected $fillable = [
-        'invoice_id',
+        'quotation_id',
         'description',
         'quantity',
         'unit_price',
@@ -39,8 +41,8 @@ class InvoiceItem extends Model
             : $value;
     }
 
-    public function invoice(): BelongsTo
+    public function quotation(): BelongsTo
     {
-        return $this->belongsTo(Invoice::class);
+        return $this->belongsTo(Quotation::class);
     }
 }

@@ -2,13 +2,12 @@ import { Table } from "@heroui/react";
 import { Link } from "@inertiajs/react";
 import { Button } from "@heroui/react";
 import { Eye, Pencil, Trash, ArrowDown } from "lucide-react";
-import { Invoice } from "../types/invoice";
 
 import { calculatorTotal, calculatorPrice } from "../utils/calculator";
 
-export function InvoicesTableRow({ invoice }: { invoice: any }) {
+export function QuotationsTableRow({ quotation }: { quotation: any }) {
     const result = calculatorTotal(
-        invoice.items.map((item: any) =>
+        quotation.items.map((item: any) =>
             calculatorPrice(
                 item.quantity,
                 item.unit_price,
@@ -19,41 +18,41 @@ export function InvoicesTableRow({ invoice }: { invoice: any }) {
     return (
         <Table.Row>
             <Table.Cell className="w-30 text-left">
-                {String(invoice.id).padStart(4, "0")}
+                {String(quotation.id).padStart(4, "0")}
             </Table.Cell>
             <Table.Cell>
                 <div className="flex flex-col">
-                    <span className="text-xs">{invoice.client.name}</span>
+                    <span className="text-xs">{quotation.client.name}</span>
                     <span className="text-xs text-muted">
-                        {invoice.client.company}
+                        {quotation.client.company}
                     </span>
                 </div>
             </Table.Cell>
-            <Table.Cell>{invoice.title}</Table.Cell>
+            <Table.Cell>{quotation.title}</Table.Cell>
             <Table.Cell className="w-30 text-center">
-                {invoice.date.toLocaleDateString()}
+                {quotation.date.toLocaleDateString()}
             </Table.Cell>
             <Table.Cell className="w-30 text-center">
                 ${result.total.toFixed(2)}
             </Table.Cell>
             <Table.Cell className="w-40">
                 <div className="flex gap-1 justify-end">
-                    <Link href={`/invoices/${invoice.id}`}>
+                    <Link href={`/quotations/${quotation.id}`}>
                         <Button isIconOnly size="sm" variant="tertiary">
                             <Eye />
                         </Button>
                     </Link>
-                    <Link href={`/invoices/${invoice.id}/pdf`}>
+                    <Link href={`/quotations/${quotation.id}/pdf`}>
                         <Button isIconOnly size="sm" variant="tertiary">
                             <ArrowDown />
                         </Button>
                     </Link>
-                    <Link href={`/invoices/${invoice.id}/edit`}>
+                    <Link href={`/quotations/${quotation.id}/edit`}>
                         <Button isIconOnly size="sm" variant="tertiary">
                             <Pencil />
                         </Button>
                     </Link>
-                    <Link href={`/invoices/${invoice.id}/delete`}>
+                    <Link href={`/quotations/${quotation.id}`} method="delete" as="button">
                         <Button isIconOnly size="sm" variant="danger-soft">
                             <Trash />
                         </Button>
@@ -64,36 +63,28 @@ export function InvoicesTableRow({ invoice }: { invoice: any }) {
     );
 }
 
-export function InvoicesTable({
-    invoices,
+export function QuotationsTable({
+    quotations,
 }: {
-    invoices: (Invoice & { id: number })[];
+    quotations: ({ id: number })[];
 }) {
     return (
         <Table variant="secondary" className="h-full">
             <Table.ScrollContainer className="h-full">
                 <Table.Content aria-label="Cotizaciones" className="min-w-150">
                     <Table.Header className="sticky top-0 z-10">
-                        <Table.Column isRowHeader className="w-30 text-left">
-                            #
-                        </Table.Column>
+                        <Table.Column isRowHeader className="w-30 text-left">#</Table.Column>
                         <Table.Column>Cliente</Table.Column>
                         <Table.Column>Titulo</Table.Column>
-                        <Table.Column className="w-30 text-center">
-                            Fecha
-                        </Table.Column>
-                        <Table.Column className="w-30 text-center">
-                            Total
-                        </Table.Column>
-                        <Table.Column className="w-40 text-right">
-                            Acciones
-                        </Table.Column>
+                        <Table.Column className="w-30 text-center">Fecha</Table.Column>
+                        <Table.Column className="w-30 text-center">Total</Table.Column>
+                        <Table.Column className="w-40 text-right">Acciones</Table.Column>
                     </Table.Header>
                     <Table.Body>
-                        {invoices.map((invoice) => (
-                            <InvoicesTableRow
-                                key={invoice.id}
-                                invoice={invoice}
+                        {quotations.map((quotation) => (
+                            <QuotationsTableRow
+                                key={quotation.id}
+                                quotation={quotation}
                             />
                         ))}
                     </Table.Body>

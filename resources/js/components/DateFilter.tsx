@@ -57,7 +57,7 @@ export default function DateFilter({ filters }: Props) {
         setRange({ start: null, end: null });
         setOpen(false);
         router.get(
-            "/invoices",
+            "/quotations",
             { search: currentSearch },
             { preserveState: true, preserveScroll: true, replace: true },
         );
@@ -67,7 +67,7 @@ export default function DateFilter({ filters }: Props) {
         if (!date) return;
         setOpen(false);
         router.get(
-            "/invoices",
+            "/quotations",
             { search: currentSearch, date: date.toString() },
             { preserveState: true, preserveScroll: true, replace: true },
         );
@@ -77,7 +77,7 @@ export default function DateFilter({ filters }: Props) {
         if (!range.start || !range.end) return;
         setOpen(false);
         router.get(
-            "/invoices",
+            "/quotations",
             {
                 search: currentSearch,
                 start_date: range.start.toString(),

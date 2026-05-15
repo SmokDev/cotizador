@@ -373,32 +373,32 @@ body {
                     @endif
                 </div>
                 <div class="header-info">
-                    <p><strong>No. de Cotización:</strong> {{ str_pad($invoice->id, 4, '0', STR_PAD_LEFT) }}</p>
-                    <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($invoice->date)->format('d/m/Y') }}</p>
-                    @if($invoice->expiration_date)
-                        <p><strong>Vigencia:</strong> {{ \Carbon\Carbon::parse($invoice->expiration_date)->format('d/m/Y') }}</p>
+                    <p><strong>No. de Cotización:</strong> {{ str_pad($quotation->id, 4, '0', STR_PAD_LEFT) }}</p>
+                    <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($quotation->date)->format('d/m/Y') }}</p>
+                    @if($quotation->expiration_date)
+                        <p><strong>Vigencia:</strong> {{ \Carbon\Carbon::parse($quotation->expiration_date)->format('d/m/Y') }}</p>
                     @endif
                 </div>
             </div>
 
             {{-- CLIENT --}}
-            @if($invoice->client)
+            @if($quotation->client)
             <div class="client-section">
-                <div class="client-name">{{ $invoice->client->name }}</div>
-                @if($invoice->client->company)
-                    <p class="client-company">{{ $invoice->client->company }}</p>
+                <div class="client-name">{{ $quotation->client->name }}</div>
+                @if($quotation->client->company)
+                    <p class="client-company">{{ $quotation->client->company }}</p>
                 @endif
             </div>
             @endif
 
             {{-- TITLE --}}
-            @if($invoice->title)
-                <p style="font-size:1.5rem; text-transform: uppercase; font-weight:700; margin:0; color:#4a4a4a;">{{ $invoice->title }}</p>
+            @if($quotation->title)
+                <p style="font-size:1.5rem; text-transform: uppercase; font-weight:700; margin:0; color:#4a4a4a;">{{ $quotation->title }}</p>
             @endif
 
             {{-- DESCRIPTION --}}
-            @if($invoice->description)
-                <p style="font-size:0.875rem; margin:0; color:#666;">{{ $invoice->description }}</p>
+            @if($quotation->description)
+                <p style="font-size:0.875rem; margin:0; color:#666;">{{ $quotation->description }}</p>
             @endif
 
             {{-- ITEMS --}}
@@ -411,8 +411,8 @@ body {
             @endphp
 
             @php
-                $isTotalI = $invoice->is_total_individual ?? false;
-                $hasDiscount = $invoice->items->contains(function ($item) {
+                $isTotalI = $quotation->is_total_individual ?? false;
+                $hasDiscount = $quotation->items->contains(function ($item) {
                     return (float)($item->percent_discount ?? 0) > 0;
                 });
 
@@ -433,7 +433,7 @@ body {
                     <div class="col" style="width:13%; text-align:center;">Total</div>
                 </div>
 
-                @foreach($invoice->items as $item)
+                @foreach($quotation->items as $item)
                 @php
                     $unitPrice = $item->unit_price;
                     $isObject = is_array($unitPrice);
@@ -482,24 +482,24 @@ body {
     <div class="terms" style="width:100%;">
         <h3>Términos y condiciones</h3>
 
-        @if($invoice->days_delivery)
+        @if($quotation->days_delivery)
             <p>
                 <strong>Tiempo de entrega:</strong>
-                {{ is_numeric($invoice->days_delivery)
-                    ? $invoice->days_delivery . ' días hábiles a partir de su aprobación'
-                    : $invoice->days_delivery }}
+                {{ is_numeric($quotation->days_delivery)
+                    ? $quotation->days_delivery . ' días hábiles a partir de su aprobación'
+                    : $quotation->days_delivery }}
             </p>
         @endif
 
         <p>
             <strong>Forma de pago:</strong>
-            {{ $invoice->payment_terms ?? '' }}
+            {{ $quotation->payment_terms ?? '' }}
         </p>
 
-        @if($invoice->notes)
+        @if($quotation->notes)
             <p><strong>Notas:</strong></p>
 
-            @foreach(explode("\n", $invoice->notes) as $line)
+            @foreach(explode("\n", $quotation->notes) as $line)
                 <p style="margin-left:1rem;">
                     {{ $line ?: ' ' }}
                 </p>
@@ -541,7 +541,7 @@ body {
 
         {{-- FOOTER --}}
         <div class="footer-section">
-            @php $c = $invoice->contact; @endphp
+            @php $c = $quotation->contact; @endphp
             @if(!empty($c['name']) || !empty($c['phone']) || !empty($c['email']))
                 <div class="footer-contact">
                     <h3 class="footer-contact-name">{{ $c['name'] ?? '' }}</h3>

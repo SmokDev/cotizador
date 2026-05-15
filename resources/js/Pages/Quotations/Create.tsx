@@ -22,11 +22,7 @@ import { buttonVariants } from "@heroui/styles";
 import { ArrowLeft, Plus, Trash, Calculator, Save } from "lucide-react";
 import QuotationPreview from "@/components/QuotationPreview";
 import CostProfitModal from "@/components/CostProfitModal";
-import {
-    calculatorPrice,
-    calculatorTotal,
-    calculatorUnitPrice,
-} from "@/utils/calculator";
+import { calculatorPrice, calculatorTotal } from "@/utils/calculator";
 import { formatCurrency } from "@/utils/helpers";
 import { CalendarDate, parseDate } from "@internationalized/date";
 
@@ -38,7 +34,7 @@ interface Client {
 
 interface Props {
     clients: Client[];
-    invoice?: any;
+    quotation?: any;
     paymentTerms?: string[];
     configContact?: { name?: string; email?: string; phone?: string };
     configLogo?: string;
@@ -47,39 +43,39 @@ interface Props {
 
 export default function Create({
     clients,
-    invoice,
+    quotation,
     paymentTerms = [],
     configContact = {},
     configLogo,
     accentColor,
 }: Props) {
-    const isEditing = !!invoice;
+    const isEditing = !!quotation;
 
     const { data, setData, post, put, processing, errors } = useForm({
-        client_id: invoice ? String(invoice.client_id) : "",
-        title: invoice?.title ?? "",
-        description: invoice?.description ?? "",
-        number: invoice ? String(invoice.id).padStart(4, "0") : "",
+        client_id: quotation ? String(quotation.client_id) : "",
+        title: quotation?.title ?? "",
+        description: quotation?.description ?? "",
+        number: quotation ? String(quotation.id).padStart(4, "0") : "",
         date:
-            invoice?.date?.split?.("T")?.[0] ??
+            quotation?.date?.split?.("T")?.[0] ??
             new Date().toISOString().split("T")[0],
         expiration_date:
-            invoice?.expiration_date?.split?.("T")?.[0] ??
+            quotation?.expiration_date?.split?.("T")?.[0] ??
             new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
                 .toISOString()
                 .split("T")[0],
-        notes: invoice?.notes ?? "",
+        notes: quotation?.notes ?? "",
         contact: {
-            name: invoice?.contact?.name ?? configContact?.name ?? "",
-            email: invoice?.contact?.email ?? configContact?.email ?? "",
-            phone: invoice?.contact?.phone ?? configContact?.phone ?? "",
+            name: quotation?.contact?.name ?? configContact?.name ?? "",
+            email: quotation?.contact?.email ?? configContact?.email ?? "",
+            phone: quotation?.contact?.phone ?? configContact?.phone ?? "",
         },
         payment_terms:
-            invoice?.payment_terms ?? (paymentTerms[0] || "100% Anticipo"),
-        delivery_label: invoice?.delivery_label ?? "Días hábiles",
-        days_delivery: invoice?.days_delivery ?? 5,
-        is_total_individual: invoice?.is_total_individual ?? false,
-        items: (invoice?.items ?? []).map((i: any) => ({
+            quotation?.payment_terms ?? (paymentTerms[0] || "100% Anticipo"),
+        delivery_label: quotation?.delivery_label ?? "Días hábiles",
+        days_delivery: quotation?.days_delivery ?? 5,
+        is_total_individual: quotation?.is_total_individual ?? false,
+        items: (quotation?.items ?? []).map((i: any) => ({
             description: i.description,
             quantity: Number(i.quantity),
             unit_price: i.unit_price,
@@ -119,7 +115,7 @@ export default function Create({
     };
 
     useEffect(() => {
-        if (data.items.length === 0 && !invoice) {
+        if (data.items.length === 0 && !quotation) {
             setData("items", [
                 {
                     description: "",
@@ -198,9 +194,9 @@ export default function Create({
     const submitForm = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEditing) {
-            put(`/invoices/${invoice.id}`);
+            put(`/quotations/${quotation.id}`);
         } else {
-            post("/invoices");
+            post("/quotations");
         }
     };
 
@@ -233,7 +229,7 @@ export default function Create({
             <Head
                 title={
                     isEditing
-                        ? `Editar Cotización #${String(invoice.id).padStart(4, "0")}`
+                        ? `Editar Cotización #${String(quotation.id).padStart(4, "0")}`
                         : "Nueva Cotización"
                 }
             />
@@ -241,22 +237,23 @@ export default function Create({
             <div className="flex items-center justify-between mb-6 shrink-0">
                 <div className="flex items-center gap-3">
                     <Link
-                        href="/invoices"
+                        href="/quotations"
                         className={buttonVariants({ variant: "tertiary" })}
                     >
                         <ArrowLeft size={20} /> Volver
                     </Link>
                     <h1 className="text-2xl font-bold">
                         {isEditing
-                            ? `Editar Cotización #${String(invoice.id).padStart(4, "0")}`
+                            ? `Editar Cotización #${String(quotation.id).padStart(4, "0")}`
                             : "Nueva Cotización"}
                     </h1>
                 </div>
                 <Button
+                    variant="primary"
                     onPress={() =>
                         isEditing
-                            ? put(`/invoices/${invoice.id}`)
-                            : post("/invoices")
+                            ? put(`/quotations/${quotation.id}`)
+                            : post("/quotations")
                     }
                     isLoading={processing}
                 >
@@ -266,10 +263,7 @@ export default function Create({
             </div>
 
             <div className="flex flex-1 min-h-0 gap-4 grow">
-                <Surface
-                    variant="default"
-                    className="w-1/2 h-full max-h-full overflow-y-scroll p-5 flex flex-col gap-5"
-                >
+                <Surface className="w-1/2 h-full overflow-y-scroll p-5 flex flex-col gap-5">
                     <form onSubmit={submitForm} className="flex flex-col gap-5">
                         <Surface
                             variant="default"
@@ -278,8 +272,8 @@ export default function Create({
                             <h2 className="text-base font-semibold border-b pb-1">
                                 Información Básica
                             </h2>
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className="flex gap-2 items-end">
+                            <div className="grid grid-cols-4 gap-3">
+                                <div className="flex gap-2 items-end col-span-2">
                                     <div className="flex-1">
                                         <ComboBox
                                             selectedKey={data.client_id || null}
@@ -325,7 +319,6 @@ export default function Create({
                                     <Button
                                         isIconOnly
                                         size="sm"
-                                        variant="primary"
                                         onPress={() => setClientModalOpen(true)}
                                     >
                                         <Plus size={14} />
@@ -479,7 +472,7 @@ export default function Create({
                                 isInvalid={!!errors.description}
                             >
                                 <Label>Descripción</Label>
-                                <TextArea className="min-h-[60px]" />
+                                <TextArea className="min-h-15" />
                                 <FieldError>{errors.description}</FieldError>
                             </TextField>
                         </Surface>
@@ -519,11 +512,11 @@ export default function Create({
                                     {errors.items}
                                 </span>
                             )}
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-3 max-h-100 overflow-y-auto">
                                 {data.items.map((item, i) => (
                                     <Surface
                                         key={i}
-                                        variant="secondary"
+                                        variant="primary"
                                         className="relative p-3"
                                     >
                                         {data.items.length > 1 && (
@@ -709,16 +702,16 @@ export default function Create({
                                         </div>
                                     </Surface>
                                 ))}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onPress={addItem}
+                                    className="w-full"
+                                >
+                                    <Plus size={14} /> Agregar
+                                </Button>
                             </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="w-full"
-                                onPress={addItem}
-                            >
-                                <Plus size={14} /> Agregar
-                            </Button>
                         </Surface>
 
                         <Surface

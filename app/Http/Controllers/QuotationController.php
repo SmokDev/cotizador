@@ -3,20 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
-use App\Models\Invoice;
+use App\Models\Quotation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
-class InvoiceController extends Controller
+class QuotationController extends Controller
 {
-    /**
-     * Obtener todas las cotizaciones.
-     */
     public function index()
     {
-        $invoices = Invoice::with(['client', 'items'])
+        $quotations = Quotation::with(['client', 'items'])
             ->when(request('search'), function ($query) {
                 $search = request('search');
                 $query->where(function ($q) use ($search) {
@@ -39,8 +35,8 @@ class InvoiceController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return inertia('Invoices/Index', [
-            'invoices' => $invoices,
+        return inertia('Quotations/Index', [
+            'quotations' => $quotations,
             'filters' => [
                 'search' => request('search'),
                 'date' => request('date'),
@@ -50,9 +46,6 @@ class InvoiceController extends Controller
         ]);
     }
 
-    /**
-     * Mostrar la vista para crear una nueva cotización.
-     */
     public function create()
     {
         $clients = Client::orderByRaw('last_used_at desc nulls last')->orderBy('name')->take(5)->get();
@@ -61,7 +54,7 @@ class InvoiceController extends Controller
         $paymentTerms = $config['payment_terms'] ?? [];
         $configContact = $config['contact'] ?? [];
 
-        return inertia('Invoices/Create', [
+        return inertia('Quotations/Create', [
             'clients' => $clients,
             'paymentTerms' => $paymentTerms,
             'configContact' => $configContact,
@@ -70,9 +63,6 @@ class InvoiceController extends Controller
         ]);
     }
 
-    /**
-     * Guardar una nueva cotización con sus items.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -87,20 +77,19 @@ class InvoiceController extends Controller
             'delivery_label'       => 'required|string',
             'days_delivery'        => 'required|integer',
             'is_total_individual'  => 'nullable|boolean',
-
-            'items'                          => 'required|array',
-            'items.*.description'            => 'required|string',
-            'items.*.quantity'               => 'required|numeric',
-            'items.*.unit_price'             => 'required',
-            'items.*.percent_discount'       => 'nullable|numeric',
+            'items'                => 'required|array',
+            'items.*.description'  => 'required|string',
+            'items.*.quantity'     => 'required|numeric',
+            'items.*.unit_price'   => 'required',
+            'items.*.percent_discount' => 'nullable|numeric',
         ]);
 
         $validated['description'] ??= '';
         $validated['notes'] ??= '';
         $validated['is_total_individual'] = $validated['is_total_individual'] ?? false;
 
-        $invoice = DB::transaction(function () use ($validated) {
-            $invoice = Invoice::create($validated);
+        $quotation = DB::transaction(function () use ($validated) {
+            $quotation = Quotation::create($validated);
             Client::where('id', $validated['client_id'])->update(['last_used_at' => now()]);
 
             $items = collect($validated['items'])->map(function ($item) {
@@ -108,48 +97,39 @@ class InvoiceController extends Controller
                 return $item;
             });
 
-            $invoice->items()->createMany($items->toArray());
+            $quotation->items()->createMany($items->toArray());
 
-            return $invoice->load('items');
+            return $quotation->load('items');
         });
 
-        return redirect()->route('invoices.show', $invoice->id);
+        return redirect()->route('quotations.show', $quotation->id);
     }
 
-    /**
-     * Mostrar una cotización específica con todos sus detalles.
-     */
-    public function show(Invoice $invoice)
+    public function show(Quotation $quotation)
     {
-        $invoice->load(['client', 'items']);
+        $quotation->load(['client', 'items']);
         $config = self::loadConfig();
-        return inertia('Invoices/Show', [
-            'invoice' => $invoice,
+        return inertia('Quotations/Show', [
+            'quotation' => $quotation,
             'configLogo' => $config['logo'] ?? null,
             'accentColor' => $config['color'] ?? '#b8860b',
         ]);
     }
 
-    /**
-     * Generar y descargar PDF de la cotización.
-     */
-    public function downloadPdf(Invoice $invoice)
+    public function downloadPdf(Quotation $quotation)
     {
-        $invoice->load(['client', 'items']);
+        $quotation->load(['client', 'items']);
         $config = self::loadConfig();
 
         $pdf = Pdf::loadView('pdf.quotation', [
-            'invoice' => $invoice,
+            'quotation' => $quotation,
             'logo' => $config['logo'] ?? null,
             'accentColor' => $config['color'] ?? '#b8860b',
         ]);
 
-        return $pdf->download("cotizacion-{$invoice->id}.pdf");
+        return $pdf->download("cotizacion-{$quotation->id}.pdf");
     }
 
-    /**
-     * Guardar y devolver ID para descarga inmediata de PDF.
-     */
     public function saveAndDownload(Request $request)
     {
         $validated = $request->validate([
@@ -164,53 +144,49 @@ class InvoiceController extends Controller
             'delivery_label'       => 'required|string',
             'days_delivery'        => 'required|integer',
             'is_total_individual'  => 'nullable|boolean',
-
-            'items'                          => 'required|array',
-            'items.*.description'            => 'required|string',
-            'items.*.quantity'               => 'required|numeric',
-            'items.*.unit_price'             => 'required',
-            'items.*.percent_discount'       => 'nullable|numeric',
+            'items'                => 'required|array',
+            'items.*.description'  => 'required|string',
+            'items.*.quantity'     => 'required|numeric',
+            'items.*.unit_price'   => 'required',
+            'items.*.percent_discount' => 'nullable|numeric',
         ]);
 
         $validated['description'] ??= '';
         $validated['notes'] ??= '';
         $validated['is_total_individual'] = $validated['is_total_individual'] ?? false;
 
-        $invoice = DB::transaction(function () use ($validated) {
-            $invoice = Invoice::create($validated);
+        $quotation = DB::transaction(function () use ($validated) {
+            $quotation = Quotation::create($validated);
             Client::where('id', $validated['client_id'])->update(['last_used_at' => now()]);
 
             $items = collect($validated['items'])->map(function ($item) {
                 $item['percent_discount'] = $item['percent_discount'] ?? 0;
                 return $item;
             });
-            $invoice->items()->createMany($items->toArray());
-            return $invoice->fresh()->load(['items', 'client']);
+            $quotation->items()->createMany($items->toArray());
+            return $quotation->fresh()->load(['items', 'client']);
         });
 
-        return response()->json(['id' => $invoice->id]);
+        return response()->json(['id' => $quotation->id]);
     }
 
-    /**
-     * Mostrar formulario de edición (redirige a create con datos).
-     */
-    public function edit(Invoice $invoice)
+    public function edit(Quotation $quotation)
     {
-        $invoice->load(['client', 'items']);
+        $quotation->load(['client', 'items']);
         $clients = Client::orderByRaw('last_used_at desc nulls last')->orderBy('name')->take(5)->get();
 
-        $hasClient = $clients->contains('id', $invoice->client_id);
-        if (!$hasClient && $invoice->client) {
-            $clients->prepend($invoice->client);
+        $hasClient = $clients->contains('id', $quotation->client_id);
+        if (!$hasClient && $quotation->client) {
+            $clients->prepend($quotation->client);
         }
 
         $config = self::loadConfig();
         $paymentTerms = $config['payment_terms'] ?? [];
         $configContact = $config['contact'] ?? [];
 
-        return inertia('Invoices/Create', [
+        return inertia('Quotations/Create', [
             'clients' => $clients,
-            'invoice' => $invoice,
+            'quotation' => $quotation,
             'paymentTerms' => $paymentTerms,
             'configContact' => $configContact,
             'configLogo' => $config['logo'] ?? null,
@@ -218,10 +194,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    /**
-     * Actualizar una cotización.
-     */
-    public function update(Request $request, Invoice $invoice)
+    public function update(Request $request, Quotation $quotation)
     {
         $validated = $request->validate([
             'client_id'        => 'sometimes|required|exists:clients,id',
@@ -230,16 +203,16 @@ class InvoiceController extends Controller
             'is_total_individual' => 'nullable|boolean',
             'contact'          => 'sometimes|required|array',
             'items'            => 'sometimes|array',
-            'items.*.id'       => 'sometimes|exists:invoice_items,id',
+            'items.*.id'       => 'sometimes|exists:quotation_items,id',
             'items.*.description'      => 'required_with:items|string',
             'items.*.quantity'         => 'required_with:items|numeric',
             'items.*.unit_price'       => 'required_with:items',
             'items.*.percent_discount' => 'nullable|numeric',
         ]);
 
-        DB::transaction(function () use ($invoice, $validated) {
-            $oldClientId = $invoice->client_id;
-            $invoice->update($validated);
+        DB::transaction(function () use ($quotation, $validated) {
+            $oldClientId = $quotation->client_id;
+            $quotation->update($validated);
 
             $newClientId = $validated['client_id'] ?? $oldClientId;
             if ($newClientId != $oldClientId) {
@@ -248,25 +221,22 @@ class InvoiceController extends Controller
             Client::where('id', $newClientId)->update(['last_used_at' => now()]);
 
             if (isset($validated['items'])) {
-                $invoice->items()->delete();
+                $quotation->items()->delete();
                 $items = collect($validated['items'])->map(function ($item) {
                     $item['percent_discount'] = $item['percent_discount'] ?? 0;
                     unset($item['id']);
                     return $item;
                 });
-                $invoice->items()->createMany($items->toArray());
+                $quotation->items()->createMany($items->toArray());
             }
         });
 
-        return redirect()->route('invoices.show', $invoice->id);
+        return redirect()->route('quotations.show', $quotation->id);
     }
 
-    /**
-     * Eliminar una cotización.
-     */
-    public function destroy(Invoice $invoice)
+    public function destroy(Quotation $quotation)
     {
-        $invoice->delete();
+        $quotation->delete();
     }
 
     private static function loadConfig(): array

@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Invoice extends Model
+class Quotation extends Model
 {
     use HasFactory;
+
+    protected $table = 'quotations';
 
     protected $fillable = [
         'client_id',
@@ -43,6 +45,6 @@ class Invoice extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(InvoiceItem::class);
+        return $this->hasMany(QuotationItem::class, 'quotation_id');
     }
 }

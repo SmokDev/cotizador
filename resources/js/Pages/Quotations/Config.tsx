@@ -61,18 +61,18 @@ export default function Config({ config }: Props) {
             if (logoFile) {
                 const fd = new FormData();
                 fd.append("logo", logoFile);
-                const res = await axios.post("/invoices/config/logo", fd);
+                const res = await axios.post("/quotations/config/logo", fd);
                 logoUrl = res.data.url;
             }
 
-            await axios.post("/invoices/config", {
+            await axios.post("/quotations/config", {
                 logo: logoUrl,
                 color: formColor,
                 contact: formContact,
                 payment_terms: terms,
             });
 
-            router.visit("/invoices/config");
+            router.visit("/quotations/config");
         } catch {
             setSaving(false);
         }
@@ -84,7 +84,7 @@ export default function Config({ config }: Props) {
 
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <Link href="/invoices" className={buttonVariants({ variant: "tertiary" })}>
+                    <Link href="/quotations" className={buttonVariants({ variant: "tertiary" })}>
                         <ArrowLeft size={20} /> Volver
                     </Link>
                     <h1 className="text-2xl font-bold">Configuración de Cotización</h1>
