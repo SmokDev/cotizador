@@ -339,7 +339,7 @@ export default function QuotationPreview({
                                     item.quantity,
                                     item.unit_price,
                                     item.percent_discount,
-                                ).subtotalWithoutDiscount,
+                                ).subtotal,
                             )}
                         </div>
                     </div>
@@ -421,27 +421,6 @@ export default function QuotationPreview({
                             fontSize: "0.875rem",
                         }}
                     >
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <span>Subtotal:</span>
-                            <span>
-                                $
-                                {formatCurrency(totals.subtotalWithoutDiscount)}
-                            </span>
-                        </div>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <span>Descuento:</span>
-                            <span>${formatCurrency(totals.discount)}</span>
-                        </div>
                         <div
                             style={{
                                 display: "flex",

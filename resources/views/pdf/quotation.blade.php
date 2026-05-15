@@ -460,7 +460,7 @@ body {
                     @if($hasDiscount)
                     <div class="col" style="width:10%; text-align:center;">{{ $discountPct > 0 ? $discountPct . '%' : '-' }}</div>
                     @endif
-                    <div class="col" style="width:15%; text-align:right;">${{ number_format($lineSubtotal, 2) }}</div>
+                    <div class="col" style="width:15%; text-align:right;">${{ number_format($lineSubtotalAfter, 2) }}</div>
                 </div>
                 @endforeach
             </div>
@@ -499,16 +499,6 @@ body {
     <div class="totals-wrap">
 
         <div class="totals">
-
-            <div class="tr">
-                <span class="lbl">Subtotal:</span>
-                <span class="val">${{ number_format($totalSubtotal, 2) }}</span>
-            </div>
-
-            <div class="tr">
-                <span class="lbl">Descuento:</span>
-                <span class="val">${{ number_format($totalDiscount, 2) }}</span>
-            </div>
 
             <div class="tr">
                 <span class="lbl">Subtotal:</span>
