@@ -1,9 +1,19 @@
-import { Button, TextField, Input, Label, NumberField } from "@heroui/react";
+import {
+    Button,
+    TextField,
+    Input,
+    Label,
+    NumberField,
+    Surface,
+} from "@heroui/react";
 import { Plus, Trash } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { formatCurrency } from "../utils/helpers";
 
-interface Spent { name: string; quantity: number; }
+interface Spent {
+    name: string;
+    quantity: number;
+}
 
 interface Props {
     isOpen: boolean;
@@ -15,10 +25,21 @@ interface Props {
     hasLockedPrice?: boolean;
 }
 
-export default function CostProfitModal({ isOpen, onClose, onConfirm, onClear, initialSpents, initialUtility, hasLockedPrice }: Props) {
+export default function CostProfitModal({
+    isOpen,
+    onClose,
+    onConfirm,
+    onClear,
+    initialSpents,
+    initialUtility,
+    hasLockedPrice,
+    quantity = 1,
+}: Props) {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [spents, setSpents] = useState<Spent[]>(
-        initialSpents?.length ? initialSpents.map(s => ({ ...s })) : [{ name: "", quantity: 0 }]
+        initialSpents?.length
+            ? initialSpents.map((s) => ({ ...s }))
+            : [{ name: "", quantity: 0 }],
     );
     const [utility, setUtility] = useState(initialUtility ?? 20);
 
@@ -31,16 +52,31 @@ export default function CostProfitModal({ isOpen, onClose, onConfirm, onClear, i
 
     useEffect(() => {
         if (isOpen) {
-            setSpents(initialSpents?.length ? initialSpents.map(s => ({ ...s })) : [{ name: "", quantity: 0 }]);
+            setSpents(
+                initialSpents?.length
+                    ? initialSpents.map((s) => ({ ...s }))
+                    : [{ name: "", quantity: 0 }],
+            );
             setUtility(initialUtility ?? 20);
         }
     }, [isOpen]);
 
-    const totalSpents = spents.reduce((acc, s) => acc + (Number(s.quantity) || 0), 0);
-    const unitPrice = totalSpents * (1 + utility / 100);
+    const totalSpents = spents.reduce(
+        (acc, s) => acc + (Number(s.quantity) || 0),
+        0,
+    );
+    const totalWithUtility = totalSpents * (1 + utility / 100);
+    const unitPrice =
+        quantity > 0 ? totalWithUtility / quantity : totalWithUtility;
 
-    const updateSpent = (index: number, field: keyof Spent, value: string | number) => {
-        const next = spents.map((s, i) => i === index ? { ...s, [field]: value } : s);
+    const updateSpent = (
+        index: number,
+        field: keyof Spent,
+        value: string | number,
+    ) => {
+        const next = spents.map((s, i) =>
+            i === index ? { ...s, [field]: value } : s,
+        );
         setSpents(next);
     };
 
@@ -52,7 +88,9 @@ export default function CostProfitModal({ isOpen, onClose, onConfirm, onClear, i
     };
 
     const handleConfirm = () => {
-        const valid = spents.filter(s => s.name.trim() && Number(s.quantity) > 0);
+        const valid = spents.filter(
+            (s) => s.name.trim() && Number(s.quantity) > 0,
+        );
         onConfirm(valid.length ? valid : spents, utility);
         dialogRef.current?.close();
     };
@@ -65,17 +103,32 @@ export default function CostProfitModal({ isOpen, onClose, onConfirm, onClear, i
         >
             <div className="bg-white rounded-xl overflow-hidden">
                 <div className="flex items-center justify-between p-5 border-b">
-                    <h2 className="text-lg font-bold">Cálculo de Precio por Gastos + Utilidad</h2>
+                    <h2 className="text-lg font-bold">
+                        Cálculo de Precio por Gastos + Utilidad
+                    </h2>
                     <form method="dialog">
-                        <Button isIconOnly size="sm" variant="tertiary" type="submit">✕</Button>
+                        <Button
+                            isIconOnly
+                            size="sm"
+                            variant="tertiary"
+                            type="submit"
+                        >
+                            ✕
+                        </Button>
                     </form>
                 </div>
 
                 <div className="p-5 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
                     <div className="flex flex-col gap-3">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-semibold">Gastos Operativos</h3>
-                            <Button size="sm" variant="secondary" onPress={addSpent}>
+                            <h3 className="text-sm font-semibold">
+                                Gastos Operativos
+                            </h3>
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                onPress={addSpent}
+                            >
                                 <Plus size={14} /> Agregar Gasto
                             </Button>
                         </div>
@@ -83,25 +136,48 @@ export default function CostProfitModal({ isOpen, onClose, onConfirm, onClear, i
                         {spents.map((spent, i) => (
                             <div key={i} className="flex gap-2 items-start">
                                 <div className="flex-1">
-                                    <TextField value={spent.name} onChange={v => updateSpent(i, "name", v)}>
+                                    <TextField
+                                        value={spent.name}
+                                        onChange={(v) =>
+                                            updateSpent(i, "name", v)
+                                        }
+                                    >
                                         <Label>Concepto</Label>
                                         <Input placeholder="Ej. Material, Mano de obra" />
                                     </TextField>
                                 </div>
                                 <div className="w-44">
-                                    <NumberField value={spent.quantity} onChange={v => updateSpent(i, "quantity", v)}
-                                        minValue={0} formatOptions={{ style: "decimal", minimumFractionDigits: 2 }}>
+                                    <NumberField
+                                        value={spent.quantity}
+                                        onChange={(v) =>
+                                            updateSpent(i, "quantity", v)
+                                        }
+                                        minValue={0}
+                                        formatOptions={{
+                                            style: "decimal",
+                                            minimumFractionDigits: 2,
+                                        }}
+                                    >
                                         <Label>Monto $</Label>
                                         <NumberField.Group>
-                                            <NumberField.DecrementButton>-</NumberField.DecrementButton>
+                                            <NumberField.DecrementButton>
+                                                -
+                                            </NumberField.DecrementButton>
                                             <NumberField.Input />
-                                            <NumberField.IncrementButton>+</NumberField.IncrementButton>
+                                            <NumberField.IncrementButton>
+                                                +
+                                            </NumberField.IncrementButton>
                                         </NumberField.Group>
                                     </NumberField>
                                 </div>
                                 <div className="w-10 flex items-end pb-2">
-                                    <Button isIconOnly size="sm" variant="danger" onPress={() => removeSpent(i)}
-                                        isDisabled={spents.length === 1}>
+                                    <Button
+                                        isIconOnly
+                                        size="sm"
+                                        variant="danger"
+                                        onPress={() => removeSpent(i)}
+                                        isDisabled={spents.length === 1}
+                                    >
                                         <Trash size={14} />
                                     </Button>
                                 </div>
@@ -110,45 +186,86 @@ export default function CostProfitModal({ isOpen, onClose, onConfirm, onClear, i
                     </div>
 
                     <div className="w-48">
-                        <NumberField value={utility} onChange={v => setUtility(v)}
-                            minValue={0} maxValue={1000}
-                            formatOptions={{ style: "percent", minimumFractionDigits: 0 }}>
+                        <NumberField
+                            value={utility}
+                            onChange={(v) => setUtility(v)}
+                            minValue={0}
+                            maxValue={1000}
+                        >
                             <Label>% Utilidad</Label>
                             <NumberField.Group>
-                                <NumberField.DecrementButton>-</NumberField.DecrementButton>
+                                <NumberField.DecrementButton>
+                                    -
+                                </NumberField.DecrementButton>
                                 <NumberField.Input />
-                                <NumberField.IncrementButton>+</NumberField.IncrementButton>
+                                <NumberField.IncrementButton>
+                                    +
+                                </NumberField.IncrementButton>
                             </NumberField.Group>
                         </NumberField>
                     </div>
 
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
-                        <div className="flex justify-between text-base">
+                    <Surface
+                        variant="secondary"
+                        className="p-4 flex flex-col gap-2"
+                    >
+                        <div className="flex justify-between text-sm">
                             <span className="font-semibold">Costo Total:</span>
-                            <span className="font-bold">${formatCurrency(totalSpents)}</span>
+                            <span className="font-bold">
+                                ${formatCurrency(totalSpents)}
+                            </span>
                         </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="font-semibold">
+                                Utilidad ({utility}%):
+                            </span>
+                            <span className="font-bold">
+                                ${formatCurrency(totalSpents * (utility / 100))}
+                            </span>
+                        </div>
+                        <hr className="my-1 border-border" />
+                        <div className="flex justify-between text-sm">
+                            <span className="font-semibold">
+                                Total con Utilidad:
+                            </span>
+                            <span className="font-bold">
+                                ${formatCurrency(totalWithUtility)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="font-semibold">Cantidad:</span>
+                            <span className="font-bold">{quantity}</span>
+                        </div>
+                        <hr className="my-1 border-border" />
                         <div className="flex justify-between text-base">
-                            <span className="font-semibold">Margen de Utilidad ({utility}%):</span>
-                            <span className="font-bold">${formatCurrency(totalSpents * (utility / 100))}</span>
+                            <span className="font-bold">Precio Unitario:</span>
+                            <span className="font-bold text-accent">
+                                ${formatCurrency(unitPrice)}
+                            </span>
                         </div>
-                        <hr className="my-2 border-amber-200" />
-                        <div className="flex justify-between text-lg">
-                            <span className="font-bold">Total del Ítem:</span>
-                            <span className="font-bold text-amber-700">${formatCurrency(unitPrice)}</span>
-                        </div>
-                    </div>
+                    </Surface>
                 </div>
 
                 <div className="flex justify-end gap-2 p-5 border-t">
                     <form method="dialog">
-                        <Button variant="tertiary" type="submit">Cancelar</Button>
+                        <Button variant="tertiary" type="submit">
+                            Cancelar
+                        </Button>
                     </form>
                     {hasLockedPrice && onClear && (
-                        <Button variant="danger" onPress={() => { onClear(); dialogRef.current?.close(); }}>
+                        <Button
+                            variant="danger"
+                            onPress={() => {
+                                onClear();
+                                dialogRef.current?.close();
+                            }}
+                        >
                             Limpiar
                         </Button>
                     )}
-                    <Button variant="primary" onPress={handleConfirm}>Aplicar</Button>
+                    <Button variant="primary" onPress={handleConfirm}>
+                        Aplicar
+                    </Button>
                 </div>
             </div>
         </dialog>

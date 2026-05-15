@@ -325,7 +325,7 @@ export default function Create({
                                     <Button
                                         isIconOnly
                                         size="sm"
-                                        variant="default"
+                                        variant="primary"
                                         onPress={() => setClientModalOpen(true)}
                                     >
                                         <Plus size={14} />
@@ -918,6 +918,11 @@ export default function Create({
                         ? data.items[costModalIndex].unit_price.utility
                         : undefined
                 }
+                quantity={
+                    costModalIndex !== null
+                        ? Number(data.items[costModalIndex]?.quantity) || 1
+                        : 1
+                }
             />
 
             {clientModalOpen && (
@@ -957,7 +962,7 @@ export default function Create({
                                 Cancelar
                             </Button>
                             <Button
-                                variant="default"
+                                variant="primary"
                                 onPress={handleCreateClient}
                             >
                                 Crear Cliente
