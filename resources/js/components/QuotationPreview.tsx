@@ -30,16 +30,8 @@ interface Props {
     client_company?: string;
     logo?: string;
     accentColor?: string;
+    isTotalIndividual?: boolean;
 }
-
-const tableRow = (accent: string) => ({
-    display: "grid",
-    gridTemplateColumns: "repeat(20, minmax(0, 1fr))",
-    border: `1px solid ${accent}`,
-    backgroundColor: "#fff",
-    padding: "0.875rem",
-    borderRadius: "0.5rem",
-});
 
 export default function QuotationPreview({
     title,
@@ -57,6 +49,7 @@ export default function QuotationPreview({
     client_company,
     logo,
     accentColor = "#b8860b",
+    isTotalIndividual = false,
 }: Props) {
     const results = items.map((item) =>
         calculatorPrice(item.quantity, item.unit_price, item.percent_discount),
@@ -66,7 +59,6 @@ export default function QuotationPreview({
     const hasDiscount = items.some(
         (item) => Number(item.percent_discount) > 0,
     );
-    const descSpan = hasDiscount ? 8 : 11;
 
     const unitPriceValue = (unit_price: any, quantity: number): number => {
         if (typeof unit_price === "object" && unit_price !== null) {
@@ -212,8 +204,7 @@ export default function QuotationPreview({
             >
                 <div
                     style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(20, minmax(0, 1fr))",
+                        display: "flex",
                         backgroundColor: accentColor,
                         color: "#fff",
                         textTransform: "uppercase",
@@ -223,243 +214,167 @@ export default function QuotationPreview({
                         borderRadius: "0.5rem",
                     }}
                 >
-                    <p
-                        style={{
-                            gridColumn: `span ${descSpan}`,
-                            textAlign: "left",
-                            margin: 0,
-                        }}
-                    >
-                        Descripción
-                    </p>
-                    <p
-                        style={{
-                            gridColumn: "span 3",
-                            textAlign: "center",
-                            margin: 0,
-                        }}
-                    >
-                        Cantidad
-                    </p>
-                    <p
-                        style={{
-                            gridColumn: "span 3",
-                            textAlign: "center",
-                            margin: 0,
-                        }}
-                    >
-                        P/U
-                    </p>
-                    {hasDiscount && (
-                        <p
-                            style={{
-                                gridColumn: "span 3",
-                                textAlign: "center",
-                                margin: 0,
-                            }}
-                        >
-                            Desc.
-                        </p>
-                    )}
-                    <p
-                        style={{
-                            gridColumn: "span 3",
-                            textAlign: "right",
-                            margin: 0,
-                        }}
-                    >
-                        Total
-                    </p>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>Descripción</div>
+                    <div style={{ width: "10%", textAlign: "center", flex: "none" }}>Cantidad</div>
+                    <div style={{ width: "10%", textAlign: "center", flex: "none" }}>P/U</div>
+                    {hasDiscount && <div style={{ width: "10%", textAlign: "center", flex: "none" }}>Desc.</div>}
+                    {isTotalIndividual && <div style={{ width: "13%", textAlign: "center", flex: "none" }}>Subtotal</div>}
+                    {isTotalIndividual && <div style={{ width: "10%", textAlign: "center", flex: "none" }}>IVA</div>}
+                    <div style={{ width: "13%", textAlign: "center", flex: "none" }}>Total</div>
                 </div>
 
-                {items.map((item, i) => (
-                    <div key={i} style={tableRow(accentColor)}>
-                        <div
-                            style={{
-                                gridColumn: `span ${descSpan}`,
-                                display: "flex",
-                                alignItems: "center",
-                                color: "#3a3a3a",
-                            }}
-                        >
+                {items.map((item, i) => {
+                    const r = calculatorPrice(item.quantity, item.unit_price, item.percent_discount);
+                    return (
+                    <div key={i} style={{ display: "flex", border: `1px solid ${accentColor}`, backgroundColor: "#fff", padding: "0.875rem", borderRadius: "0.5rem" }}>
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", color: "#3a3a3a" }}>
                             {item.description || "-"}
                         </div>
-                        <div
-                            style={{
-                                gridColumn: "span 3",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                color: "#3a3a3a",
-                            }}
-                        >
+                        <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
                             {item.quantity}
                         </div>
-                        <div
-                            style={{
-                                gridColumn: "span 3",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                color: "#3a3a3a",
-                            }}
-                        >
-                            $
-                            {formatCurrency(
-                                unitPriceValue(item.unit_price, item.quantity),
-                            )}
+                        <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                            ${formatCurrency(unitPriceValue(item.unit_price, item.quantity))}
                         </div>
                         {hasDiscount && (
-                            <div
-                                style={{
-                                    gridColumn: "span 3",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    color: "#3a3a3a",
-                                }}
-                            >
-                                {item.percent_discount
-                                ? `${item.percent_discount}%`
-                                : "-"}
+                            <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                {item.percent_discount ? `${item.percent_discount}%` : "-"}
                             </div>
                         )}
-                        <div
-                            style={{
-                                gridColumn: "span 3",
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                alignItems: "center",
-                                color: "#3a3a3a",
-                            }}
-                        >
-                            $
-                            {formatCurrency(
-                                calculatorPrice(
-                                    item.quantity,
-                                    item.unit_price,
-                                    item.percent_discount,
-                                ).subtotal,
-                            )}
+                        {isTotalIndividual && (
+                            <div style={{ width: "13%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                ${formatCurrency(r.subtotal)}
+                            </div>
+                        )}
+                        {isTotalIndividual && (
+                            <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                ${formatCurrency(r.iva)}
+                            </div>
+                        )}
+                        <div style={{ width: "13%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                            ${formatCurrency(isTotalIndividual ? r.total : r.subtotal)}
                         </div>
                     </div>
-                ))}
+                    );
+                })}
             </div>
 
-            {/* TERMS AND TOTALS */}
+        {/* TERMS */}
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "2rem",
+                marginTop: "auto",
+            }}
+        >
             <div
                 style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "2rem",
-                    marginTop: "auto",
+                    width: isTotalIndividual ? "100%" : "66.66%",
+                    fontSize: "0.875rem",
+                    color: "#3a3a3a",
+                }}
+            >
+                <h3
+                    style={{
+                        fontWeight: 600,
+                        color: accentColor,
+                        margin: "0 0 0.5rem 0",
+                    }}
+                >
+                    Términos y condiciones
+                </h3>
+                {days_delivery && (
+                    <p style={{ margin: "0.25rem 0" }}>
+                        <strong>Tiempo de entrega:</strong>{" "}
+                        {isNaN(Number(days_delivery))
+                            ? days_delivery
+                            : `${days_delivery} días hábiles a partir de su aprobación`}
+                    </p>
+                )}
+                <p style={{ margin: "0.25rem 0" }}>
+                    <strong>Forma de pago:</strong> {payment_terms}
+                </p>
+                {notes && (
+                    <div style={{ marginTop: "0.5rem" }}>
+                        <p style={{ margin: "0.25rem 0" }}>
+                            <strong>Notas:</strong>
+                        </p>
+                        {notes.split("\n").map((line, i) => (
+                            <p
+                                key={i}
+                                style={{
+                                    margin: "0.25rem 0",
+                                    marginLeft: "1rem",
+                                }}
+                            >
+                                {line || "\u00A0"}
+                            </p>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {!isTotalIndividual && (
+            <div
+                style={{
+                    width: "33.33%",
+                    backgroundColor: accentColor,
+                    color: "#fff",
+                    padding: "1rem",
+                    borderRadius: "0.5rem",
+                    border: `1px solid ${accentColor}`,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                 }}
             >
                 <div
                     style={{
-                        width: "66.66%",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.5rem",
                         fontSize: "0.875rem",
-                        color: "#3a3a3a",
-                    }}
-                >
-                    <h3
-                        style={{
-                            fontWeight: 600,
-                            color: accentColor,
-                            margin: "0 0 0.5rem 0",
-                        }}
-                    >
-                        Términos y condiciones
-                    </h3>
-                    {days_delivery && (
-                        <p style={{ margin: "0.25rem 0" }}>
-                            <strong>Tiempo de entrega:</strong>{" "}
-                            {isNaN(Number(days_delivery))
-                                ? days_delivery
-                                : `${days_delivery} días hábiles a partir de su aprobación`}
-                        </p>
-                    )}
-                    <p style={{ margin: "0.25rem 0" }}>
-                        <strong>Forma de pago:</strong> {payment_terms}
-                    </p>
-                    {notes && (
-                        <div style={{ marginTop: "0.5rem" }}>
-                            <p style={{ margin: "0.25rem 0" }}>
-                                <strong>Notas:</strong>
-                            </p>
-                            {notes.split("\n").map((line, i) => (
-                                <p
-                                    key={i}
-                                    style={{
-                                        margin: "0.25rem 0",
-                                        marginLeft: "1rem",
-                                    }}
-                                >
-                                    {line || "\u00A0"}
-                                </p>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <div
-                    style={{
-                        width: "33.33%",
-                        backgroundColor: accentColor,
-                        color: "#fff",
-                        padding: "1rem",
-                        borderRadius: "0.5rem",
-                        border: `1px solid ${accentColor}`,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                     }}
                 >
                     <div
                         style={{
                             display: "flex",
-                            flexDirection: "column",
-                            gap: "0.5rem",
-                            fontSize: "0.875rem",
+                            justifyContent: "space-between",
                         }}
                     >
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <span>Subtotal:</span>
-                            <span>${formatCurrency(totals.subtotal)}</span>
-                        </div>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <span>IVA:</span>
-                            <span>${formatCurrency(totals.iva)}</span>
-                        </div>
-                        <hr
-                            style={{
-                                border: "none",
-                                borderTop: "1px solid rgba(255,255,255,0.4)",
-                                margin: "0.5rem 0",
-                            }}
-                        />
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                fontWeight: "bold",
-                                fontSize: "1rem",
-                            }}
-                        >
-                            <span>Total:</span>
-                            <span>${formatCurrency(totals.total)}</span>
-                        </div>
+                        <span>Subtotal:</span>
+                        <span>${formatCurrency(totals.subtotal)}</span>
+                    </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <span>IVA:</span>
+                        <span>${formatCurrency(totals.iva)}</span>
+                    </div>
+                    <hr
+                        style={{
+                            border: "none",
+                            borderTop: "1px solid rgba(255,255,255,0.4)",
+                            margin: "0.5rem 0",
+                        }}
+                    />
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontWeight: "bold",
+                            fontSize: "1rem",
+                        }}
+                    >
+                        <span>Total:</span>
+                        <span>${formatCurrency(totals.total)}</span>
                     </div>
                 </div>
             </div>
+            )}
+        </div>
 
             {/* FOOTER */}
             <div

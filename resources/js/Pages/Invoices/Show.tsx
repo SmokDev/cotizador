@@ -50,6 +50,7 @@ export default function Show({ invoice, configLogo, accentColor }: any) {
                     client_company={invoice.client?.company}
                     logo={configLogo}
                     accentColor={accentColor}
+                    isTotalIndividual={invoice.is_total_individual}
                 />
             </Surface>
         </div>

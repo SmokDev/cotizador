@@ -2,9 +2,23 @@ import { useState, useEffect } from "react";
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import axios from "axios";
 import {
-    Button, Surface, TextField, Input, TextArea, Label, FieldError,
-    NumberField, ComboBox, ListBox, ListBoxItem, DatePicker, DateField, Calendar,
+    Button,
+    Surface,
+    TextField,
+    Input,
+    TextArea,
+    Label,
+    FieldError,
+    NumberField,
+    ComboBox,
+    ListBox,
+    ListBoxItem,
+    DatePicker,
+    DateField,
+    Calendar,
+    Checkbox,
 } from "@heroui/react";
+import type { CheckboxProps } from "@heroui/react";
 
 import { buttonVariants } from "@heroui/styles";
 import { ArrowLeft, Plus, Trash, Calculator, Download } from "lucide-react";
@@ -33,7 +47,14 @@ interface Props {
     accentColor?: string;
 }
 
-export default function Create({ clients, invoice, paymentTerms = [], configContact = {}, configLogo, accentColor }: Props) {
+export default function Create({
+    clients,
+    invoice,
+    paymentTerms = [],
+    configContact = {},
+    configLogo,
+    accentColor,
+}: Props) {
     const isEditing = !!invoice;
     const [downloadProcessing, setDownloadProcessing] = useState(false);
 
@@ -56,9 +77,11 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
             email: invoice?.contact?.email ?? configContact?.email ?? "",
             phone: invoice?.contact?.phone ?? configContact?.phone ?? "",
         },
-        payment_terms: invoice?.payment_terms ?? (paymentTerms[0] || "100% Anticipo"),
+        payment_terms:
+            invoice?.payment_terms ?? (paymentTerms[0] || "100% Anticipo"),
         delivery_label: invoice?.delivery_label ?? "Días hábiles",
         days_delivery: invoice?.days_delivery ?? 5,
+        is_total_individual: invoice?.is_total_individual ?? false,
         items: (invoice?.items ?? []).map((i: any) => ({
             description: i.description,
             quantity: Number(i.quantity),
@@ -204,7 +227,9 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
     );
     const totals = calculatorTotal(results);
 
-    const selectedClient = clientsList.find((c) => String(c.id) === data.client_id);
+    const selectedClient = clientsList.find(
+        (c) => String(c.id) === data.client_id,
+    );
 
     const getUnitPriceFromObject = (
         unit_price: any,
@@ -537,12 +562,20 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                                     allowsCustomValue
                                     defaultFilter={(text, inputValue) => {
                                         if (!inputValue) return true;
-                                        return text.toLowerCase().includes(inputValue.toLowerCase());
+                                        return text
+                                            .toLowerCase()
+                                            .includes(inputValue.toLowerCase());
                                     }}
                                     onSelectionChange={(key) => {
-                                        if (key) setData("payment_terms", String(key));
+                                        if (key)
+                                            setData(
+                                                "payment_terms",
+                                                String(key),
+                                            );
                                     }}
-                                    onInputChange={(v) => setData("payment_terms", v)}
+                                    onInputChange={(v) =>
+                                        setData("payment_terms", v)
+                                    }
                                     isInvalid={!!errors.payment_terms}
                                     isRequired
                                 >
@@ -557,7 +590,11 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                                     <ComboBox.Popover>
                                         <ListBox>
                                             {paymentTerms.map((term, i) => (
-                                                <ListBox.Item key={term} id={term} textValue={term}>
+                                                <ListBox.Item
+                                                    key={term}
+                                                    id={term}
+                                                    textValue={term}
+                                                >
                                                     {term}
                                                     <ListBox.ItemIndicator />
                                                 </ListBox.Item>
@@ -628,14 +665,35 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                                 <h2 className="text-base font-semibold">
                                     Ítems
                                 </h2>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    onPress={addItem}
-                                >
-                                    <Plus size={14} /> Agregar
-                                </Button>
+                                <div className="flex items-center gap-3">
+                                    <Checkbox
+                                        id="total-individual"
+                                        isSelected={data.is_total_individual}
+                                        onChange={(v) =>
+                                            setData("is_total_individual", v)
+                                        }
+                                    >
+                                        <Checkbox.Control>
+                                            <Checkbox.Indicator />
+                                        </Checkbox.Control>
+                                        <Checkbox.Content>
+                                            <Label
+                                                htmlFor="total-individual"
+                                                className="text-sm cursor-pointer"
+                                            >
+                                                Total Individual
+                                            </Label>
+                                        </Checkbox.Content>
+                                    </Checkbox>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onPress={addItem}
+                                    >
+                                        <Plus size={14} /> Agregar
+                                    </Button>
+                                </div>
                             </div>
                             {typeof errors.items === "string" && (
                                 <span className="text-red-500 text-xs">
@@ -892,6 +950,7 @@ export default function Create({ clients, invoice, paymentTerms = [], configCont
                             client_company={selectedClient?.company}
                             logo={configLogo}
                             accentColor={accentColor}
+                            isTotalIndividual={data.is_total_individual}
                         />
                     </div>
                 </div>

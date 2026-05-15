@@ -86,6 +86,7 @@ class InvoiceController extends Controller
             'payment_terms'        => 'required|string',
             'delivery_label'       => 'required|string',
             'days_delivery'        => 'required|integer',
+            'is_total_individual'  => 'nullable|boolean',
 
             'items'                          => 'required|array',
             'items.*.description'            => 'required|string',
@@ -96,6 +97,7 @@ class InvoiceController extends Controller
 
         $validated['description'] ??= '';
         $validated['notes'] ??= '';
+        $validated['is_total_individual'] = $validated['is_total_individual'] ?? false;
 
         $invoice = DB::transaction(function () use ($validated) {
             $invoice = Invoice::create($validated);
@@ -161,6 +163,7 @@ class InvoiceController extends Controller
             'payment_terms'        => 'required|string',
             'delivery_label'       => 'required|string',
             'days_delivery'        => 'required|integer',
+            'is_total_individual'  => 'nullable|boolean',
 
             'items'                          => 'required|array',
             'items.*.description'            => 'required|string',
@@ -171,6 +174,7 @@ class InvoiceController extends Controller
 
         $validated['description'] ??= '';
         $validated['notes'] ??= '';
+        $validated['is_total_individual'] = $validated['is_total_individual'] ?? false;
 
         $invoice = DB::transaction(function () use ($validated) {
             $invoice = Invoice::create($validated);
@@ -223,6 +227,7 @@ class InvoiceController extends Controller
             'client_id'        => 'sometimes|required|exists:clients,id',
             'title'            => 'sometimes|required|string',
             'description'      => 'sometimes|required|string',
+            'is_total_individual' => 'nullable|boolean',
             'contact'          => 'sometimes|required|array',
             'items'            => 'sometimes|array',
             'items.*.id'       => 'sometimes|exists:invoice_items,id',

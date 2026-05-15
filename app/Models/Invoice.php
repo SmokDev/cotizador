@@ -17,6 +17,7 @@ class Invoice extends Model
         'description',
         'date',
         'expiration_date',
+        'is_total_individual',
         'notes',
         'contact',
         'payment_terms',
@@ -31,6 +32,7 @@ class Invoice extends Model
             'expiration_date' => 'date',
             'contact' => 'array',
             'days_delivery' => 'integer',
+            'is_total_individual' => 'boolean',
         ];
     }
 

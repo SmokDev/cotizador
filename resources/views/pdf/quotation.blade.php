@@ -411,19 +411,26 @@ body {
             @endphp
 
             @php
+                $isTotalI = $invoice->is_total_individual ?? false;
                 $hasDiscount = $invoice->items->contains(function ($item) {
                     return (float)($item->percent_discount ?? 0) > 0;
                 });
+
+                $descW = $hasDiscount ? ($isTotalI ? 34 : 57) : ($isTotalI ? 44 : 67);
             @endphp
             <div class="items-wrap">
                 <div class="items-header">
-                    <div class="col" style="{{ $hasDiscount ? 'width:55%' : 'width:65%' }}; text-align:left;">Descripción</div>
+                    <div class="col" style="width:{{ $descW }}%; text-align:left;">Descripción</div>
                     <div class="col" style="width:10%; text-align:center;">Cantidad</div>
                     <div class="col" style="width:10%; text-align:center;">P/U</div>
                     @if($hasDiscount)
                     <div class="col" style="width:10%; text-align:center;">Desc.</div>
                     @endif
-                    <div class="col" style="width:15%; text-align:right;">Total</div>
+                    @if($isTotalI)
+                    <div class="col" style="width:13%; text-align:center;">Subtotal</div>
+                    <div class="col" style="width:10%; text-align:center;">IVA</div>
+                    @endif
+                    <div class="col" style="width:13%; text-align:center;">Total</div>
                 </div>
 
                 @foreach($invoice->items as $item)
@@ -454,21 +461,25 @@ body {
                     $totalFinal += $lineTotal;
                 @endphp
                 <div class="item-row">
-                    <div class="col" style="{{ $hasDiscount ? 'width:55%' : 'width:65%' }}">{{ $item->description }}</div>
+                    <div class="col" style="width:{{ $descW }}%">{{ $item->description }}</div>
                     <div class="col" style="width:10%; text-align:center;">{{ number_format($qty, 2) }}</div>
                     <div class="col" style="width:10%; text-align:center;">${{ number_format($unitPriceValue, 2) }}</div>
                     @if($hasDiscount)
                     <div class="col" style="width:10%; text-align:center;">{{ $discountPct > 0 ? $discountPct . '%' : '-' }}</div>
                     @endif
-                    <div class="col" style="width:15%; text-align:right;">${{ number_format($lineSubtotalAfter, 2) }}</div>
+                    @if($isTotalI)
+                    <div class="col" style="width:13%; text-align:center;">${{ number_format($lineSubtotalAfter, 2) }}</div>
+                    <div class="col" style="width:10%; text-align:center;">${{ number_format($lineIva, 2) }}</div>
+                    @endif
+                    <div class="col" style="width:13%; text-align:center;">${{ number_format($isTotalI ? $lineTotal : $lineSubtotalAfter, 2) }}</div>
                 </div>
                 @endforeach
             </div>
 
-            {{-- TERMS AND TOTALS --}}
+            {{-- TERMS --}}
             <div class="tt-wrap">
 
-    <div class="terms">
+    <div class="terms" style="width:100%;">
         <h3>Términos y condiciones</h3>
 
         @if($invoice->days_delivery)
@@ -496,6 +507,7 @@ body {
         @endif
     </div>
 
+    @if(!$isTotalI)
     <div class="totals-wrap">
 
         <div class="totals">
@@ -520,6 +532,8 @@ body {
         </div>
 
     </div>
+
+    @endif
 
 </div>
 
