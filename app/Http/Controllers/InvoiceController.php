@@ -113,7 +113,7 @@ class InvoiceController extends Controller
             return $invoice->load('items');
         });
 
-        return redirect()->route('invoices.index');
+        return redirect()->route('invoices.show', $invoice->id);
     }
 
     /**
@@ -258,7 +258,7 @@ class InvoiceController extends Controller
             }
         });
 
-        return back();
+        return redirect()->route('invoices.show', $invoice->id);
     }
 
     /**
@@ -267,8 +267,6 @@ class InvoiceController extends Controller
     public function destroy(Invoice $invoice)
     {
         $invoice->delete();
-
-        return redirect()->route('invoices.index');
     }
 
     private static function loadConfig(): array

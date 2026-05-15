@@ -86,8 +86,6 @@ export default function QuotationPreview({
                 gap: "20px",
                 boxSizing: "border-box",
                 borderRadius: "12px",
-                border: "1px solid #e5e7eb",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
             }}
         >
             {/* HEADER */}
@@ -324,7 +322,6 @@ export default function QuotationPreview({
                     padding: "1rem",
                     borderRadius: "0.5rem",
                     border: `1px solid ${accentColor}`,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                 }}
             >
                 <div

@@ -18,10 +18,8 @@ import {
     Calendar,
     Checkbox,
 } from "@heroui/react";
-import type { CheckboxProps } from "@heroui/react";
-
 import { buttonVariants } from "@heroui/styles";
-import { ArrowLeft, Plus, Trash, Calculator, Download } from "lucide-react";
+import { ArrowLeft, Plus, Trash, Calculator, Save } from "lucide-react";
 import QuotationPreview from "@/components/QuotationPreview";
 import CostProfitModal from "@/components/CostProfitModal";
 import {
@@ -56,7 +54,6 @@ export default function Create({
     accentColor,
 }: Props) {
     const isEditing = !!invoice;
-    const [downloadProcessing, setDownloadProcessing] = useState(false);
 
     const { data, setData, post, put, processing, errors } = useForm({
         client_id: invoice ? String(invoice.client_id) : "",
@@ -207,21 +204,6 @@ export default function Create({
         }
     };
 
-    const handleDownload = async () => {
-        setDownloadProcessing(true);
-        try {
-            const response = await axios.post(
-                "/invoices/save-and-download",
-                data,
-            );
-            const invoiceId = response.data.id;
-            window.open(`/invoices/${invoiceId}/pdf`, "_blank");
-            router.visit("/invoices");
-        } catch {
-            setDownloadProcessing(false);
-        }
-    };
-
     const results = data.items.map((item) =>
         calculatorPrice(item.quantity, item.unit_price, item.percent_discount),
     );
@@ -247,74 +229,56 @@ export default function Create({
     };
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden bg-background">
-            <Head title="Crear Cotización" />
+        <div className="min-h-screen h-screen bg-background p-8 flex flex-col">
+            <Head
+                title={
+                    isEditing
+                        ? `Editar Cotización #${String(invoice.id).padStart(4, "0")}`
+                        : "Nueva Cotización"
+                }
+            />
 
-            <header className="shrink-0 px-6 py-3 border-b border-border flex items-center justify-between bg-surface">
+            <div className="flex items-center justify-between mb-6 shrink-0">
                 <div className="flex items-center gap-3">
                     <Link
                         href="/invoices"
-                        className={buttonVariants({
-                            variant: "tertiary",
-                            size: "sm",
-                        })}
+                        className={buttonVariants({ variant: "tertiary" })}
                     >
-                        <ArrowLeft size={18} />
+                        <ArrowLeft size={20} /> Volver
                     </Link>
-                    <h1 className="text-lg font-bold">
+                    <h1 className="text-2xl font-bold">
                         {isEditing
                             ? `Editar Cotización #${String(invoice.id).padStart(4, "0")}`
                             : "Nueva Cotización"}
                     </h1>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        onPress={() =>
-                            isEditing
-                                ? put(`/invoices/${invoice.id}`)
-                                : post("/invoices")
-                        }
-                        isLoading={processing}
-                    >
-                        {isEditing
-                            ? "Actualizar Cotización"
-                            : "Guardar Cotización"}
-                    </Button>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onPress={handleDownload}
-                        isLoading={processing || downloadProcessing}
-                    >
-                        <Download size={16} /> Descargar PDF
-                    </Button>
-                </div>
-            </header>
+                <Button
+                    onPress={() =>
+                        isEditing
+                            ? put(`/invoices/${invoice.id}`)
+                            : post("/invoices")
+                    }
+                    isLoading={processing}
+                >
+                    <Save size={16} />{" "}
+                    {isEditing ? "Guardar Cambios" : "Crear Cotización"}
+                </Button>
+            </div>
 
-            <div className="flex flex-1 min-h-0">
-                <div className="w-1/2 overflow-y-auto p-6 border-r border-border">
+            <div className="flex flex-1 min-h-0 gap-4 grow">
+                <Surface
+                    variant="default"
+                    className="w-1/2 h-full max-h-full overflow-y-scroll p-5 flex flex-col gap-5"
+                >
                     <form onSubmit={submitForm} className="flex flex-col gap-5">
-                        <Surface className="p-5 flex flex-col gap-4">
+                        <Surface
+                            variant="default"
+                            className="p-5 flex flex-col gap-4"
+                        >
                             <h2 className="text-base font-semibold border-b pb-1">
                                 Información Básica
                             </h2>
-                            <div className="grid grid-cols-2 gap-3">
-                                <TextField
-                                    value={data.title}
-                                    onChange={(v) => setData("title", v)}
-                                    isInvalid={!!errors.title}
-                                    isRequired
-                                >
-                                    <Label>
-                                        Título / Proyecto{" "}
-                                        <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input />
-                                    <FieldError>{errors.title}</FieldError>
-                                </TextField>
-
+                            <div className="grid grid-cols-3 gap-3">
                                 <div className="flex gap-2 items-end">
                                     <div className="flex-1">
                                         <ComboBox
@@ -361,306 +325,169 @@ export default function Create({
                                     <Button
                                         isIconOnly
                                         size="sm"
-                                        variant="secondary"
+                                        variant="default"
                                         onPress={() => setClientModalOpen(true)}
                                     >
                                         <Plus size={14} />
                                     </Button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <DatePicker
-                                        value={calDate}
-                                        onChange={handleCalDateChange}
-                                        isInvalid={!!errors.date}
-                                        isRequired
-                                    >
-                                        <Label>
-                                            Fecha{" "}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <DateField.Group fullWidth>
-                                            <DateField.Input>
-                                                {(segment) => (
-                                                    <DateField.Segment
-                                                        segment={segment}
-                                                    />
-                                                )}
-                                            </DateField.Input>
-                                            <DateField.Suffix>
-                                                <DatePicker.Trigger>
-                                                    <DatePicker.TriggerIndicator />
-                                                </DatePicker.Trigger>
-                                            </DateField.Suffix>
-                                        </DateField.Group>
-                                        <DatePicker.Popover>
-                                            <Calendar aria-label="Fecha">
-                                                <Calendar.Header>
-                                                    <Calendar.YearPickerTrigger>
-                                                        <Calendar.YearPickerTriggerHeading />
-                                                        <Calendar.YearPickerTriggerIndicator />
-                                                    </Calendar.YearPickerTrigger>
-                                                    <Calendar.NavButton slot="previous" />
-                                                    <Calendar.NavButton slot="next" />
-                                                </Calendar.Header>
-                                                <Calendar.Grid>
-                                                    <Calendar.GridHeader>
-                                                        {(day) => (
-                                                            <Calendar.HeaderCell>
-                                                                {day}
-                                                            </Calendar.HeaderCell>
-                                                        )}
-                                                    </Calendar.GridHeader>
-                                                    <Calendar.GridBody>
-                                                        {(d) => (
-                                                            <Calendar.Cell
-                                                                date={d}
-                                                            />
-                                                        )}
-                                                    </Calendar.GridBody>
-                                                </Calendar.Grid>
-                                                <Calendar.YearPickerGrid>
-                                                    <Calendar.YearPickerGridBody>
-                                                        {({ year }) => (
-                                                            <Calendar.YearPickerCell
-                                                                year={year}
-                                                            />
-                                                        )}
-                                                    </Calendar.YearPickerGridBody>
-                                                </Calendar.YearPickerGrid>
-                                            </Calendar>
-                                        </DatePicker.Popover>
-                                        <FieldError>{errors.date}</FieldError>
-                                    </DatePicker>
-                                    <DatePicker
-                                        value={calExpDate}
-                                        onChange={handleCalExpDateChange}
-                                        isInvalid={!!errors.expiration_date}
-                                        isRequired
-                                    >
-                                        <Label>
-                                            Expiración{" "}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <DateField.Group fullWidth>
-                                            <DateField.Input>
-                                                {(segment) => (
-                                                    <DateField.Segment
-                                                        segment={segment}
-                                                    />
-                                                )}
-                                            </DateField.Input>
-                                            <DateField.Suffix>
-                                                <DatePicker.Trigger>
-                                                    <DatePicker.TriggerIndicator />
-                                                </DatePicker.Trigger>
-                                            </DateField.Suffix>
-                                        </DateField.Group>
-                                        <DatePicker.Popover>
-                                            <Calendar aria-label="Expiración">
-                                                <Calendar.Header>
-                                                    <Calendar.YearPickerTrigger>
-                                                        <Calendar.YearPickerTriggerHeading />
-                                                        <Calendar.YearPickerTriggerIndicator />
-                                                    </Calendar.YearPickerTrigger>
-                                                    <Calendar.NavButton slot="previous" />
-                                                    <Calendar.NavButton slot="next" />
-                                                </Calendar.Header>
-                                                <Calendar.Grid>
-                                                    <Calendar.GridHeader>
-                                                        {(day) => (
-                                                            <Calendar.HeaderCell>
-                                                                {day}
-                                                            </Calendar.HeaderCell>
-                                                        )}
-                                                    </Calendar.GridHeader>
-                                                    <Calendar.GridBody>
-                                                        {(d) => (
-                                                            <Calendar.Cell
-                                                                date={d}
-                                                            />
-                                                        )}
-                                                    </Calendar.GridBody>
-                                                </Calendar.Grid>
-                                                <Calendar.YearPickerGrid>
-                                                    <Calendar.YearPickerGridBody>
-                                                        {({ year }) => (
-                                                            <Calendar.YearPickerCell
-                                                                year={year}
-                                                            />
-                                                        )}
-                                                    </Calendar.YearPickerGridBody>
-                                                </Calendar.YearPickerGrid>
-                                            </Calendar>
-                                        </DatePicker.Popover>
-                                        <FieldError>
-                                            {errors.expiration_date}
-                                        </FieldError>
-                                    </DatePicker>
-                                </div>
-                                <TextField
-                                    className="col-span-2"
-                                    value={data.description}
-                                    onChange={(v) => setData("description", v)}
-                                    isInvalid={!!errors.description}
-                                >
-                                    <Label>Descripción</Label>
-                                    <TextArea className="min-h-[60px]" />
-                                    <FieldError>
-                                        {errors.description}
-                                    </FieldError>
-                                </TextField>
-                            </div>
-                        </Surface>
-
-                        <Surface className="p-5 flex flex-col gap-4">
-                            <h2 className="text-base font-semibold border-b pb-1">
-                                Contacto
-                            </h2>
-                            <div className="grid grid-cols-3 gap-3">
-                                <TextField
-                                    value={data.contact.name}
-                                    onChange={(v) => updateContact("name", v)}
-                                >
-                                    <Label>Nombre</Label>
-                                    <Input />
-                                </TextField>
-                                <TextField
-                                    type="email"
-                                    value={data.contact.email}
-                                    onChange={(v) => updateContact("email", v)}
-                                >
-                                    <Label>Correo Electrónico</Label>
-                                    <Input />
-                                </TextField>
-                                <TextField
-                                    value={data.contact.phone}
-                                    onChange={(v) => updateContact("phone", v)}
-                                >
-                                    <Label>Teléfono</Label>
-                                    <Input />
-                                </TextField>
-                            </div>
-                            {errors.contact && (
-                                <span className="text-red-500 text-xs">
-                                    {errors.contact}
-                                </span>
-                            )}
-                        </Surface>
-
-                        <Surface className="p-5 flex flex-col gap-4">
-                            <h2 className="text-base font-semibold border-b pb-1">
-                                Condiciones
-                            </h2>
-                            <div className="grid grid-cols-3 gap-3">
-                                <ComboBox
-                                    className="w-full"
-                                    defaultInputValue={data.payment_terms}
-                                    allowsCustomValue
-                                    defaultFilter={(text, inputValue) => {
-                                        if (!inputValue) return true;
-                                        return text
-                                            .toLowerCase()
-                                            .includes(inputValue.toLowerCase());
-                                    }}
-                                    onSelectionChange={(key) => {
-                                        if (key)
-                                            setData(
-                                                "payment_terms",
-                                                String(key),
-                                            );
-                                    }}
-                                    onInputChange={(v) =>
-                                        setData("payment_terms", v)
-                                    }
-                                    isInvalid={!!errors.payment_terms}
+                                <DatePicker
+                                    value={calDate}
+                                    onChange={handleCalDateChange}
+                                    isInvalid={!!errors.date}
                                     isRequired
                                 >
                                     <Label>
-                                        Términos de Pago{" "}
+                                        Fecha{" "}
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <ComboBox.InputGroup>
-                                        <Input placeholder="Escribe o selecciona..." />
-                                        <ComboBox.Trigger />
-                                    </ComboBox.InputGroup>
-                                    <ComboBox.Popover>
-                                        <ListBox>
-                                            {paymentTerms.map((term, i) => (
-                                                <ListBox.Item
-                                                    key={term}
-                                                    id={term}
-                                                    textValue={term}
-                                                >
-                                                    {term}
-                                                    <ListBox.ItemIndicator />
-                                                </ListBox.Item>
-                                            ))}
-                                        </ListBox>
-                                    </ComboBox.Popover>
-                                    <FieldError>
-                                        {errors.payment_terms}
-                                    </FieldError>
-                                </ComboBox>
-                                <TextField
-                                    value={data.delivery_label}
-                                    onChange={(v) =>
-                                        setData("delivery_label", v)
-                                    }
-                                    isInvalid={!!errors.delivery_label}
+                                    <DateField.Group fullWidth>
+                                        <DateField.Input>
+                                            {(segment) => (
+                                                <DateField.Segment
+                                                    segment={segment}
+                                                />
+                                            )}
+                                        </DateField.Input>
+                                        <DateField.Suffix>
+                                            <DatePicker.Trigger>
+                                                <DatePicker.TriggerIndicator />
+                                            </DatePicker.Trigger>
+                                        </DateField.Suffix>
+                                    </DateField.Group>
+                                    <DatePicker.Popover>
+                                        <Calendar aria-label="Fecha">
+                                            <Calendar.Header>
+                                                <Calendar.YearPickerTrigger>
+                                                    <Calendar.YearPickerTriggerHeading />
+                                                    <Calendar.YearPickerTriggerIndicator />
+                                                </Calendar.YearPickerTrigger>
+                                                <Calendar.NavButton slot="previous" />
+                                                <Calendar.NavButton slot="next" />
+                                            </Calendar.Header>
+                                            <Calendar.Grid>
+                                                <Calendar.GridHeader>
+                                                    {(day) => (
+                                                        <Calendar.HeaderCell>
+                                                            {day}
+                                                        </Calendar.HeaderCell>
+                                                    )}
+                                                </Calendar.GridHeader>
+                                                <Calendar.GridBody>
+                                                    {(d) => (
+                                                        <Calendar.Cell
+                                                            date={d}
+                                                        />
+                                                    )}
+                                                </Calendar.GridBody>
+                                            </Calendar.Grid>
+                                            <Calendar.YearPickerGrid>
+                                                <Calendar.YearPickerGridBody>
+                                                    {({ year }) => (
+                                                        <Calendar.YearPickerCell
+                                                            year={year}
+                                                        />
+                                                    )}
+                                                </Calendar.YearPickerGridBody>
+                                            </Calendar.YearPickerGrid>
+                                        </Calendar>
+                                    </DatePicker.Popover>
+                                    <FieldError>{errors.date}</FieldError>
+                                </DatePicker>
+                                <DatePicker
+                                    value={calExpDate}
+                                    onChange={handleCalExpDateChange}
+                                    isInvalid={!!errors.expiration_date}
                                     isRequired
                                 >
                                     <Label>
-                                        Etiqueta de Entrega{" "}
+                                        Expiración{" "}
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input placeholder="Ej. Días hábiles" />
+                                    <DateField.Group fullWidth>
+                                        <DateField.Input>
+                                            {(segment) => (
+                                                <DateField.Segment
+                                                    segment={segment}
+                                                />
+                                            )}
+                                        </DateField.Input>
+                                        <DateField.Suffix>
+                                            <DatePicker.Trigger>
+                                                <DatePicker.TriggerIndicator />
+                                            </DatePicker.Trigger>
+                                        </DateField.Suffix>
+                                    </DateField.Group>
+                                    <DatePicker.Popover>
+                                        <Calendar aria-label="Expiración">
+                                            <Calendar.Header>
+                                                <Calendar.YearPickerTrigger>
+                                                    <Calendar.YearPickerTriggerHeading />
+                                                    <Calendar.YearPickerTriggerIndicator />
+                                                </Calendar.YearPickerTrigger>
+                                                <Calendar.NavButton slot="previous" />
+                                                <Calendar.NavButton slot="next" />
+                                            </Calendar.Header>
+                                            <Calendar.Grid>
+                                                <Calendar.GridHeader>
+                                                    {(day) => (
+                                                        <Calendar.HeaderCell>
+                                                            {day}
+                                                        </Calendar.HeaderCell>
+                                                    )}
+                                                </Calendar.GridHeader>
+                                                <Calendar.GridBody>
+                                                    {(d) => (
+                                                        <Calendar.Cell
+                                                            date={d}
+                                                        />
+                                                    )}
+                                                </Calendar.GridBody>
+                                            </Calendar.Grid>
+                                            <Calendar.YearPickerGrid>
+                                                <Calendar.YearPickerGridBody>
+                                                    {({ year }) => (
+                                                        <Calendar.YearPickerCell
+                                                            year={year}
+                                                        />
+                                                    )}
+                                                </Calendar.YearPickerGridBody>
+                                            </Calendar.YearPickerGrid>
+                                        </Calendar>
+                                    </DatePicker.Popover>
                                     <FieldError>
-                                        {errors.delivery_label}
+                                        {errors.expiration_date}
                                     </FieldError>
-                                </TextField>
-                                <NumberField
-                                    value={data.days_delivery}
-                                    onChange={(v) =>
-                                        setData("days_delivery", v)
-                                    }
-                                    isInvalid={!!errors.days_delivery}
-                                    isRequired
-                                    minValue={0}
-                                >
-                                    <Label>
-                                        Días de Entrega{" "}
-                                        <span className="text-red-500">*</span>
-                                    </Label>
-                                    <NumberField.Group>
-                                        <NumberField.DecrementButton>
-                                            -
-                                        </NumberField.DecrementButton>
-                                        <NumberField.Input />
-                                        <NumberField.IncrementButton>
-                                            +
-                                        </NumberField.IncrementButton>
-                                    </NumberField.Group>
-                                    <FieldError>
-                                        {errors.days_delivery}
-                                    </FieldError>
-                                </NumberField>
+                                </DatePicker>
                             </div>
                             <TextField
-                                value={data.notes}
-                                onChange={(v) => setData("notes", v)}
-                                isInvalid={!!errors.notes}
+                                value={data.title}
+                                onChange={(v) => setData("title", v)}
+                                isInvalid={!!errors.title}
+                                isRequired
                             >
-                                <Label>Notas adicionales</Label>
-                                <TextArea className="min-h-[80px]" />
-                                <FieldError>{errors.notes}</FieldError>
+                                <Label>
+                                    Título / Proyecto{" "}
+                                    <span className="text-red-500">*</span>
+                                </Label>
+                                <Input />
+                                <FieldError>{errors.title}</FieldError>
+                            </TextField>
+                            <TextField
+                                value={data.description}
+                                onChange={(v) => setData("description", v)}
+                                isInvalid={!!errors.description}
+                            >
+                                <Label>Descripción</Label>
+                                <TextArea className="min-h-[60px]" />
+                                <FieldError>{errors.description}</FieldError>
                             </TextField>
                         </Surface>
 
-                        <Surface className="p-5 flex flex-col gap-3">
+                        <Surface
+                            variant="default"
+                            className="p-5 flex flex-col gap-3"
+                        >
                             <div className="flex justify-between items-center border-b pb-1">
                                 <h2 className="text-base font-semibold">
                                     Ítems
@@ -685,14 +512,6 @@ export default function Create({
                                             </Label>
                                         </Checkbox.Content>
                                     </Checkbox>
-                                    <Button
-                                        type="button"
-                                        variant="secondary"
-                                        size="sm"
-                                        onPress={addItem}
-                                    >
-                                        <Plus size={14} /> Agregar
-                                    </Button>
                                 </div>
                             </div>
                             {typeof errors.items === "string" && (
@@ -700,11 +519,12 @@ export default function Create({
                                     {errors.items}
                                 </span>
                             )}
-                            <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
+                            <div className="flex flex-col gap-3">
                                 {data.items.map((item, i) => (
-                                    <div
+                                    <Surface
                                         key={i}
-                                        className="relative border border-border rounded-lg p-3"
+                                        variant="secondary"
+                                        className="relative p-3"
                                     >
                                         {data.items.length > 1 && (
                                             <Button
@@ -877,7 +697,6 @@ export default function Create({
                                                     <Button
                                                         isIconOnly
                                                         size="sm"
-                                                        variant="tertiary"
                                                         type="button"
                                                         onPress={() =>
                                                             setCostModalIndex(i)
@@ -888,52 +707,174 @@ export default function Create({
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Surface>
                                 ))}
                             </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onPress={addItem}
+                            >
+                                <Plus size={14} /> Agregar
+                            </Button>
                         </Surface>
 
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
-                            <div className="flex justify-between">
-                                <span>Subtotal:</span>
-                                <span className="font-semibold">
-                                    $
-                                    {formatCurrency(
-                                        totals.subtotalWithoutDiscount,
-                                    )}
-                                </span>
+                        <Surface
+                            variant="default"
+                            className="p-5 flex flex-col gap-4"
+                        >
+                            <h2 className="text-base font-semibold border-b pb-1">
+                                Condiciones
+                            </h2>
+                            <div className="grid grid-cols-3 gap-3">
+                                <ComboBox
+                                    className="w-full"
+                                    defaultInputValue={data.payment_terms}
+                                    allowsCustomValue
+                                    defaultFilter={(text, inputValue) => {
+                                        if (!inputValue) return true;
+                                        return text
+                                            .toLowerCase()
+                                            .includes(inputValue.toLowerCase());
+                                    }}
+                                    onSelectionChange={(key) => {
+                                        if (key)
+                                            setData(
+                                                "payment_terms",
+                                                String(key),
+                                            );
+                                    }}
+                                    onInputChange={(v) =>
+                                        setData("payment_terms", v)
+                                    }
+                                    isInvalid={!!errors.payment_terms}
+                                    isRequired
+                                >
+                                    <Label>
+                                        Términos de Pago{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
+                                    <ComboBox.InputGroup>
+                                        <Input placeholder="Escribe o selecciona..." />
+                                        <ComboBox.Trigger />
+                                    </ComboBox.InputGroup>
+                                    <ComboBox.Popover>
+                                        <ListBox>
+                                            {paymentTerms.map((term, i) => (
+                                                <ListBox.Item
+                                                    key={term}
+                                                    id={term}
+                                                    textValue={term}
+                                                >
+                                                    {term}
+                                                    <ListBox.ItemIndicator />
+                                                </ListBox.Item>
+                                            ))}
+                                        </ListBox>
+                                    </ComboBox.Popover>
+                                    <FieldError>
+                                        {errors.payment_terms}
+                                    </FieldError>
+                                </ComboBox>
+                                <TextField
+                                    value={data.delivery_label}
+                                    onChange={(v) =>
+                                        setData("delivery_label", v)
+                                    }
+                                    isInvalid={!!errors.delivery_label}
+                                    isRequired
+                                >
+                                    <Label>
+                                        Etiqueta de Entrega{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input placeholder="Ej. Días hábiles" />
+                                    <FieldError>
+                                        {errors.delivery_label}
+                                    </FieldError>
+                                </TextField>
+                                <NumberField
+                                    value={data.days_delivery}
+                                    onChange={(v) =>
+                                        setData("days_delivery", v)
+                                    }
+                                    isInvalid={!!errors.days_delivery}
+                                    isRequired
+                                    minValue={0}
+                                >
+                                    <Label>
+                                        Días de Entrega{" "}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
+                                    <NumberField.Group>
+                                        <NumberField.DecrementButton>
+                                            -
+                                        </NumberField.DecrementButton>
+                                        <NumberField.Input />
+                                        <NumberField.IncrementButton>
+                                            +
+                                        </NumberField.IncrementButton>
+                                    </NumberField.Group>
+                                    <FieldError>
+                                        {errors.days_delivery}
+                                    </FieldError>
+                                </NumberField>
                             </div>
-                            <div className="flex justify-between">
-                                <span>Descuento:</span>
-                                <span className="font-semibold">
-                                    ${formatCurrency(totals.discount)}
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Subtotal con Desc.:</span>
-                                <span className="font-semibold">
-                                    ${formatCurrency(totals.subtotal)}
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>IVA (16%):</span>
-                                <span className="font-semibold">
-                                    ${formatCurrency(totals.iva)}
-                                </span>
-                            </div>
-                            <hr className="my-1.5 border-amber-200" />
-                            <div className="flex justify-between font-bold text-base">
-                                <span>Total:</span>
-                                <span className="text-amber-700">
-                                    ${formatCurrency(totals.total)}
-                                </span>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                            <TextField
+                                value={data.notes}
+                                onChange={(v) => setData("notes", v)}
+                                isInvalid={!!errors.notes}
+                            >
+                                <Label>Notas adicionales</Label>
+                                <TextArea className="min-h-[80px]" />
+                                <FieldError>{errors.notes}</FieldError>
+                            </TextField>
+                        </Surface>
 
-                <div className="w-1/2 overflow-y-auto p-6 bg-gray-50 flex flex-col items-center">
-                    <div className="w-full max-w-[816px]">
+                        <Surface
+                            variant="default"
+                            className="p-5 flex flex-col gap-4"
+                        >
+                            <h2 className="text-base font-semibold border-b pb-1">
+                                Contacto
+                            </h2>
+                            <div className="grid grid-cols-3 gap-3">
+                                <TextField
+                                    value={data.contact.name}
+                                    onChange={(v) => updateContact("name", v)}
+                                >
+                                    <Label>Nombre</Label>
+                                    <Input />
+                                </TextField>
+                                <TextField
+                                    type="email"
+                                    value={data.contact.email}
+                                    onChange={(v) => updateContact("email", v)}
+                                >
+                                    <Label>Correo Electrónico</Label>
+                                    <Input />
+                                </TextField>
+                                <TextField
+                                    value={data.contact.phone}
+                                    onChange={(v) => updateContact("phone", v)}
+                                >
+                                    <Label>Teléfono</Label>
+                                    <Input />
+                                </TextField>
+                            </div>
+                            {errors.contact && (
+                                <span className="text-red-500 text-xs">
+                                    {errors.contact}
+                                </span>
+                            )}
+                        </Surface>
+                    </form>
+                </Surface>
+
+                <Surface className="w-1/2 h-full overflow-y-auto p-5 flex items-start justify-center">
+                    <div className="w-full min-h-full max-w-[816px]">
                         <QuotationPreview
                             title={data.title}
                             number={data.number || "---"}
@@ -953,7 +894,7 @@ export default function Create({
                             isTotalIndividual={data.is_total_individual}
                         />
                     </div>
-                </div>
+                </Surface>
             </div>
 
             <CostProfitModal
@@ -1016,7 +957,7 @@ export default function Create({
                                 Cancelar
                             </Button>
                             <Button
-                                variant="primary"
+                                variant="default"
                                 onPress={handleCreateClient}
                             >
                                 Crear Cliente
