@@ -58,12 +58,17 @@ export default function Index({ invoices, filters }: Props) {
         debouncedSearch(f);
     };
 
-    const debouncedSearch = useMemo(() => debounce(
-        (f: Record<string, string>) => {
-            router.get("/invoices", f, { preserveState: true, preserveScroll: true, replace: true });
-        },
-        500,
-    ), []);
+    const debouncedSearch = useMemo(
+        () =>
+            debounce((f: Record<string, string>) => {
+                router.get("/invoices", f, {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                });
+            }, 500),
+        [],
+    );
 
     return (
         <div className="p-8 h-screen box-border">
@@ -83,7 +88,7 @@ export default function Index({ invoices, filters }: Props) {
                             <SearchField.Group>
                                 <SearchField.SearchIcon />
                                 <SearchField.Input
-                                    className="w-[280px]"
+                                    className="w-70"
                                     placeholder="Buscar cotización..."
                                 />
                                 <SearchField.ClearButton />
