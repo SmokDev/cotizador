@@ -19,9 +19,9 @@ export default function Show({ invoice, configLogo, accentColor }: any) {
                     </Link>
                     <h1 className="text-2xl font-bold">Cotización #{String(invoice.id).padStart(4, "0")}</h1>
                 </div>
-                <Link href={`/invoices/${invoice.id}/pdf`} className={buttonVariants({ variant: "primary" })}>
+                <a href={`/invoices/${invoice.id}/pdf`} className={buttonVariants({ variant: "primary" })}>
                     <Download size={16} /> Descargar PDF
-                </Link>
+                </a>
             </div>
 
             <Surface className="p-6">
