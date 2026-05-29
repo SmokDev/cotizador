@@ -198,9 +198,9 @@ export default function Create({
     const submitForm = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEditing) {
-            put(`/quotations/${quotation.id}`);
+            put(`/${quotation.id}`);
         } else {
-            post("/quotations");
+            post("/");
         }
     };
 
@@ -755,7 +755,7 @@ export default function Create({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6 shrink-0">
             <div className="flex items-center gap-3">
                 <Link
-                    href="/quotations"
+                    href="/"
                     className={buttonVariants({ variant: "tertiary" })}
                 >
                     <ArrowLeft size={20} /> Volver
@@ -770,8 +770,8 @@ export default function Create({
                 variant="primary"
                 onPress={() =>
                     isEditing
-                        ? put(`/quotations/${quotation.id}`)
-                        : post("/quotations")
+                        ? put(`/${quotation.id}`)
+                        : post("/")
                 }
                 isLoading={processing}
             >

@@ -37,22 +37,22 @@ export function QuotationsTableRow({ quotation }: { quotation: any }) {
             </Table.Cell>
             <Table.Cell className="w-40">
                 <div className="flex gap-1 justify-end">
-                    <Link href={`/quotations/${quotation.id}`}>
+                    <Link href={`/${quotation.id}`}>
                         <Button isIconOnly size="sm" variant="tertiary">
                             <Eye />
                         </Button>
                     </Link>
-                    <Link href={`/quotations/${quotation.id}/pdf`}>
+                    <Link href={`/${quotation.id}/pdf`}>
                         <Button isIconOnly size="sm" variant="tertiary">
                             <ArrowDown />
                         </Button>
                     </Link>
-                    <Link href={`/quotations/${quotation.id}/edit`}>
+                    <Link href={`/${quotation.id}/edit`}>
                         <Button isIconOnly size="sm" variant="tertiary">
                             <Pencil />
                         </Button>
                     </Link>
-                    <Link href={`/quotations/${quotation.id}`} method="delete" as="button">
+                    <Link href={`/${quotation.id}`} method="delete" as="button">
                         <Button isIconOnly size="sm" variant="danger-soft">
                             <Trash />
                         </Button>

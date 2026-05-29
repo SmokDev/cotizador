@@ -14,12 +14,12 @@ export default function Show({ quotation, configLogo, accentColor }: any) {
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
                 <div className="flex items-center gap-3">
-                    <Link href="/quotations" className={buttonVariants({ variant: "tertiary" })}>
+                    <Link href="/" className={buttonVariants({ variant: "tertiary" })}>
                         <ArrowLeft size={20} /> Volver
                     </Link>
                     <h1 className="text-xl md:text-2xl font-bold">Cotización #{String(quotation.id).padStart(4, "0")}</h1>
                 </div>
-                <a href={`/quotations/${quotation.id}/pdf`} className={buttonVariants({ variant: "primary" })}>
+                <a href={`/${quotation.id}/pdf`} className={buttonVariants({ variant: "primary" })}>
                     <Download size={16} /> Descargar PDF
                 </a>
             </div>

@@ -3,19 +3,16 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\QuotationController;
 use App\Models\Client;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home');
-});
-
-Route::get('/quotations/config', function () {
+Route::get('/config', function () {
     $path = storage_path('app/config/quotations.json');
     $config = file_exists($path) ? json_decode(file_get_contents($path), true) : [];
     return inertia('Quotations/Config', ['config' => $config]);
 })->name('quotations.config');
 
-Route::post('/quotations/config', function (\Illuminate\Http\Request $request) {
+Route::post('/config', function (Request $request) {
     $data = $request->validate([
         'logo' => 'nullable|string',
         'color' => 'nullable|string',
@@ -33,7 +30,7 @@ Route::post('/quotations/config', function (\Illuminate\Http\Request $request) {
     return redirect()->route('quotations.config')->with('success', 'Configuración guardada');
 });
 
-Route::post('/quotations/config/logo', function (\Illuminate\Http\Request $request) {
+Route::post('/config/logo', function (Request $request) {
     $request->validate(['logo' => 'required|image|mimes:png,jpg,jpeg,svg|max:2048']);
     $file = $request->file('logo');
     $name = 'logo.' . $file->extension();
@@ -41,12 +38,20 @@ Route::post('/quotations/config/logo', function (\Illuminate\Http\Request $reque
     return response()->json(['url' => '/logos/' . $name]);
 });
 
-Route::resource('quotations', QuotationController::class);
+Route::get('/create', [QuotationController::class, 'create'])->name('quotations.create');
 
-Route::get('/quotations/{quotation}/pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.pdf');
-Route::post('/quotations/save-and-download', [QuotationController::class, 'saveAndDownload'])->name('quotations.save-and-download');
+Route::get('/', [QuotationController::class, 'index'])->name('quotations.index');
+Route::post('/', [QuotationController::class, 'store'])->name('quotations.store');
 
-Route::post('/clients', function (\Illuminate\Http\Request $request) {
+Route::get('/{quotation}', [QuotationController::class, 'show'])->name('quotations.show');
+Route::get('/{quotation}/edit', [QuotationController::class, 'edit'])->name('quotations.edit');
+Route::put('/{quotation}', [QuotationController::class, 'update'])->name('quotations.update');
+Route::delete('/{quotation}', [QuotationController::class, 'destroy'])->name('quotations.destroy');
+
+Route::get('/{quotation}/pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.pdf');
+Route::post('/save-and-download', [QuotationController::class, 'saveAndDownload'])->name('quotations.save-and-download');
+
+Route::post('/clients', function (Request $request) {
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'company' => 'nullable|string|max:255',

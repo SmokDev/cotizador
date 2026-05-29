@@ -53,7 +53,7 @@ export default function Index({ quotations, filters }: Props) {
 
     const debouncedSearch = useMemo(() => debounce(
         (f: Record<string, string>) => {
-            router.get("/quotations", f, { preserveState: true, preserveScroll: true, replace: true });
+            router.get("/", f, { preserveState: true, preserveScroll: true, replace: true });
         },
         500,
     ), []);
@@ -74,7 +74,7 @@ export default function Index({ quotations, filters }: Props) {
                         </SearchField>
                         <DateFilter />
                     </div>
-                    <Link href="/quotations/create" className={`${buttonVariants({ variant: "primary" })} w-full sm:w-auto justify-center`}>
+                    <Link href="/create" className={`${buttonVariants({ variant: "primary" })} w-full sm:w-auto justify-center`}>
                         <Plus /> Crear Cotización
                     </Link>
                 </div>
@@ -110,7 +110,7 @@ export default function Index({ quotations, filters }: Props) {
                                 </Pagination.Item>
                                 {getPaginationRange(1, quotations.last_page, quotations.current_page).map((page) => (
                                     <Pagination.Item key={page}>
-                                        <Link href={`/quotations?search=${search || ""}&page=${page}`}
+                                        <Link href={`/?search=${search || ""}&page=${page}`}
                                             preserveState preserveScroll replace>
                                             <Pagination.Link isActive={page === quotations.current_page}>
                                                 {page}
