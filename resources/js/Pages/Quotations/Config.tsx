@@ -79,27 +79,27 @@ export default function Config({ config }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-background p-8 flex flex-col">
+        <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col">
             <Head title="Configuración" />
 
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
                 <div className="flex items-center gap-3">
                     <Link href="/quotations" className={buttonVariants({ variant: "tertiary" })}>
                         <ArrowLeft size={20} /> Volver
                     </Link>
-                    <h1 className="text-2xl font-bold">Configuración de Cotización</h1>
+                    <h1 className="text-xl md:text-2xl font-bold">Configuración de Cotización</h1>
                 </div>
                 <Button variant="primary" onPress={handleSave} isLoading={saving}>
                     <Save size={16} /> Guardar
                 </Button>
             </div>
 
-            <Surface className="p-6 flex flex-col gap-6 w-full flex-1">
+            <Surface className="p-4 md:p-6 flex flex-col gap-6 w-full flex-1">
                 <div className="flex flex-col gap-4">
                     <h2 className="text-lg font-semibold border-b pb-2">Logo</h2>
-                    <div className="flex items-end gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                         {logoPreview && (
-                            <div className="relative">
+                            <div className="relative inline-flex">
                                 <img src={logoPreview} alt="Logo" className="h-16 w-auto object-contain border rounded-lg p-1" />
                                 <Button isIconOnly size="sm" variant="danger"
                                     className="absolute -top-2 -right-2 min-w-0 h-5 w-5 rounded-full"
@@ -126,7 +126,7 @@ export default function Config({ config }: Props) {
 
                 <div className="flex flex-col gap-4">
                     <h2 className="text-lg font-semibold border-b pb-2">Color Principal</h2>
-                    <ColorField className="w-[280px]" name="color" value={formColor} onChange={setFormColor}>
+                    <ColorField className="w-full sm:w-[280px]" name="color" value={formColor} onChange={setFormColor}>
                         <Label>Color</Label>
                         <ColorField.Group>
                             <ColorField.Prefix>
@@ -157,12 +157,12 @@ export default function Config({ config }: Props) {
 
                 <div className="flex flex-col gap-4">
                     <h2 className="text-lg font-semibold border-b pb-2">Formas de Pago</h2>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                         <TextField value={newTerm} onChange={setNewTerm} className="flex-1">
                             <Label>Nueva forma de pago</Label>
                             <Input placeholder="Ej. 50% Anticipo y 50% Contra Entrega" />
                         </TextField>
-                        <div className="pt-6">
+                        <div className="sm:pt-6 flex sm:block">
                             <Button isIconOnly size="sm" variant="secondary" onPress={addTerm}>
                                 <Plus size={16} />
                             </Button>

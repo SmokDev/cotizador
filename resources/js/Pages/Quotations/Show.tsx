@@ -9,22 +9,22 @@ export default function Show({ quotation, configLogo, accentColor }: any) {
         ? JSON.parse(quotation.contact) : (quotation.contact || {});
 
     return (
-        <div className="min-h-screen bg-background p-8">
+        <div className="min-h-screen bg-background p-4 md:p-8">
             <Head title={`Cotización ${String(quotation.id).padStart(4, "0")}`} />
 
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
                 <div className="flex items-center gap-3">
                     <Link href="/quotations" className={buttonVariants({ variant: "tertiary" })}>
                         <ArrowLeft size={20} /> Volver
                     </Link>
-                    <h1 className="text-2xl font-bold">Cotización #{String(quotation.id).padStart(4, "0")}</h1>
+                    <h1 className="text-xl md:text-2xl font-bold">Cotización #{String(quotation.id).padStart(4, "0")}</h1>
                 </div>
                 <a href={`/quotations/${quotation.id}/pdf`} className={buttonVariants({ variant: "primary" })}>
                     <Download size={16} /> Descargar PDF
                 </a>
             </div>
 
-            <Surface className="p-6">
+            <Surface className="p-4 md:p-6">
                 <QuotationPreview
                     title={quotation.title}
                     number={String(quotation.id).padStart(4, "0")}
@@ -44,7 +44,6 @@ export default function Show({ quotation, configLogo, accentColor }: any) {
                         phone: contact.phone || "",
                     }}
                     payment_terms={quotation.payment_terms}
-                    delivery_label={quotation.delivery_label}
                     days_delivery={Number(quotation.days_delivery)}
                     client_name={quotation.client?.name}
                     client_company={quotation.client?.company}

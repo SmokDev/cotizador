@@ -97,7 +97,7 @@ export default function DateFilter({ filters }: Props) {
             </Button>
 
             {open && (
-                <Surface className="absolute top-full left-0 z-50 mt-2 min-w-[360px] p-4 shadow-xl">
+                <Surface className="absolute top-full left-0 sm:left-auto z-50 mt-2 w-[calc(100vw-2rem)] sm:w-auto min-w-0 sm:min-w-[360px] p-4 shadow-xl">
                     <Tabs
                         selectedKey={tab}
                         onSelectionChange={(key) => setTab(String(key))}

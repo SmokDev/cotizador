@@ -59,27 +59,27 @@ export default function Index({ quotations, filters }: Props) {
     ), []);
 
     return (
-        <div className="p-8 h-screen box-border">
+        <div className="p-4 md:p-8 h-screen box-border">
             <Head title="Cotizaciones" />
 
             <Surface variant="default" className="flex flex-col gap-4 h-full box-border">
-                <div className="flex justify-between items-center grow-0">
-                    <div className="flex gap-2">
-                        <SearchField name="search" onChange={(search) => handleSearch(search)} value={search}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 grow-0">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <SearchField name="search" onChange={(search) => handleSearch(search)} value={search} className="w-full sm:w-auto">
                             <SearchField.Group>
                                 <SearchField.SearchIcon />
-                                <SearchField.Input className="w-[280px]" placeholder="Buscar cotización..." />
+                                <SearchField.Input className="w-full sm:w-[280px]" placeholder="Buscar cotización..." />
                                 <SearchField.ClearButton />
                             </SearchField.Group>
                         </SearchField>
                         <DateFilter />
                     </div>
-                    <Link href="/quotations/create" className={buttonVariants({ variant: "primary" })}>
+                    <Link href="/quotations/create" className={`${buttonVariants({ variant: "primary" })} w-full sm:w-auto justify-center`}>
                         <Plus /> Crear Cotización
                     </Link>
                 </div>
 
-                <div className="grow min-h-0">
+                <div className="grow min-h-0 overflow-hidden">
                     <QuotationsTable
                         quotations={quotations.data.map((q: any) => ({
                             ...q,

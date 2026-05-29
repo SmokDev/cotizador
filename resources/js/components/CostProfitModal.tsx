@@ -146,7 +146,7 @@ export default function CostProfitModal({
                                         <Input placeholder="Ej. Material, Mano de obra" />
                                     </TextField>
                                 </div>
-                                <div className="w-44">
+                                <div className="w-full sm:w-44">
                                     <NumberField
                                         value={spent.quantity}
                                         onChange={(v) =>
@@ -185,7 +185,7 @@ export default function CostProfitModal({
                         ))}
                     </div>
 
-                    <div className="w-48">
+                    <div className="w-full sm:w-48">
                         <NumberField
                             value={utility}
                             onChange={(v) => setUtility(v)}

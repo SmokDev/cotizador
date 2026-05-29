@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { formatCurrency, formatDate } from "../utils/helpers";
 import { calculatorPrice, calculatorTotal } from "../utils/calculator";
 
@@ -24,7 +25,6 @@ interface Props {
     notes: string;
     contact: Contact;
     payment_terms: string;
-    delivery_label: string;
     days_delivery: number;
     client_name?: string;
     client_company?: string;
@@ -43,7 +43,6 @@ export default function QuotationPreview({
     notes,
     contact,
     payment_terms,
-    delivery_label,
     days_delivery,
     client_name,
     client_company,
@@ -51,6 +50,16 @@ export default function QuotationPreview({
     accentColor = "#b8860b",
     isTotalIndividual = false,
 }: Props) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const mq = window.matchMedia("(max-width: 640px)");
+        setIsMobile(mq.matches);
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mq.addEventListener("change", handler);
+        return () => mq.removeEventListener("change", handler);
+    }, []);
+
     const results = items.map((item) =>
         calculatorPrice(item.quantity, item.unit_price, item.percent_discount),
     );
@@ -73,27 +82,31 @@ export default function QuotationPreview({
         return Number(unit_price) || 0;
     };
 
+    const p = isMobile ? 24 : 72;
+
     return (
         <div
             style={{
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
-                padding: "72px",
+                padding: `${p}px`,
                 backgroundColor: "#fff",
                 color: "#3a3a3a",
                 fontFamily: "'Instrument Sans', Arial, sans-serif",
-                gap: "20px",
+                gap: isMobile ? "16px" : "20px",
                 boxSizing: "border-box",
                 borderRadius: "12px",
+                fontSize: isMobile ? "0.8125rem" : "inherit",
             }}
         >
-            {/* HEADER */}
             <div
                 style={{
                     display: "flex",
+                    flexDirection: isMobile ? "column" : "row",
                     justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    alignItems: isMobile ? "flex-start" : "flex-start",
+                    gap: isMobile ? "12px" : "0",
                 }}
             >
                 <div>
@@ -102,9 +115,9 @@ export default function QuotationPreview({
                             src={logo}
                             alt="Logo"
                             style={{
-                                width: "280px",
+                                width: isMobile ? "200px" : "280px",
                                 height: "auto",
-                                maxWidth: "280px",
+                                maxWidth: isMobile ? "200px" : "280px",
                                 display: "block",
                             }}
                         />
@@ -112,7 +125,7 @@ export default function QuotationPreview({
                         <h1
                             style={{
                                 color: accentColor,
-                                fontSize: "1.5rem",
+                                fontSize: isMobile ? "1.25rem" : "1.5rem",
                                 fontWeight: "bold",
                                 margin: 0,
                             }}
@@ -121,7 +134,7 @@ export default function QuotationPreview({
                         </h1>
                     )}
                 </div>
-                <div style={{ textAlign: "right" }}>
+                <div style={{ textAlign: isMobile ? "left" : "right" }}>
                     <p style={{ fontSize: "0.875rem", margin: "0.25rem 0" }}>
                         <strong>No. de Cotización:</strong> {number}
                     </p>
@@ -142,12 +155,11 @@ export default function QuotationPreview({
                 </div>
             </div>
 
-            {/* CLIENT */}
             {client_name && (
                 <div style={{ margin: "1rem 0" }}>
                     <h2
                         style={{
-                            fontSize: "1.25rem",
+                            fontSize: isMobile ? "1.125rem" : "1.25rem",
                             fontWeight: 600,
                             color: "#4a4a4a",
                         }}
@@ -157,7 +169,7 @@ export default function QuotationPreview({
                     {client_company && (
                         <p
                             style={{
-                                fontSize: "1.125rem",
+                                fontSize: isMobile ? "1rem" : "1.125rem",
                                 margin: "0 0 0.5rem 0",
                                 color: "#666",
                             }}
@@ -168,11 +180,10 @@ export default function QuotationPreview({
                 </div>
             )}
 
-            {/* TITLE */}
             {title && (
                 <h3
                     style={{
-                        fontSize: "1.5rem",
+                        fontSize: isMobile ? "1.25rem" : "1.5rem",
                         fontWeight: 600,
                         margin: 0,
                         color: "#4a4a4a",
@@ -183,92 +194,135 @@ export default function QuotationPreview({
                 </h3>
             )}
 
-            {/* DESCRIPTION */}
             {description && (
                 <p style={{ fontSize: "0.875rem", margin: 0, color: "#666" }}>
                     {description}
                 </p>
             )}
 
-            {/* ITEMS TABLE */}
-            <div
-                style={{
-                    width: "100%",
-                    fontSize: "0.875rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.75rem",
-                }}
-            >
+            {isMobile ? (
                 <div
                     style={{
+                        width: "100%",
+                        fontSize: "0.875rem",
                         display: "flex",
-                        backgroundColor: accentColor,
-                        color: "#fff",
-                        textTransform: "uppercase",
-                        fontWeight: 600,
-                        fontSize: "0.75rem",
-                        padding: "0.875rem",
-                        borderRadius: "0.5rem",
+                        flexDirection: "column",
+                        gap: "0.625rem",
                     }}
                 >
-                    <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>Descripción</div>
-                    <div style={{ width: "10%", textAlign: "center", flex: "none" }}>Cantidad</div>
-                    <div style={{ width: "10%", textAlign: "center", flex: "none" }}>P/U</div>
-                    {hasDiscount && <div style={{ width: "10%", textAlign: "center", flex: "none" }}>Desc.</div>}
-                    {isTotalIndividual && <div style={{ width: "13%", textAlign: "center", flex: "none" }}>Subtotal</div>}
-                    {isTotalIndividual && <div style={{ width: "10%", textAlign: "center", flex: "none" }}>IVA</div>}
-                    <div style={{ width: "13%", textAlign: "center", flex: "none" }}>Total</div>
-                </div>
-
-                {items.map((item, i) => {
-                    const r = calculatorPrice(item.quantity, item.unit_price, item.percent_discount);
-                    return (
-                    <div key={i} style={{ display: "flex", border: `1px solid ${accentColor}`, backgroundColor: "#fff", padding: "0.875rem", borderRadius: "0.5rem" }}>
-                        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", color: "#3a3a3a" }}>
-                            {item.description || "-"}
-                        </div>
-                        <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
-                            {item.quantity}
-                        </div>
-                        <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
-                            ${formatCurrency(unitPriceValue(item.unit_price, item.quantity))}
-                        </div>
-                        {hasDiscount && (
-                            <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
-                                {item.percent_discount ? `${item.percent_discount}%` : "-"}
-                            </div>
-                        )}
-                        {isTotalIndividual && (
-                            <div style={{ width: "13%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
-                                ${formatCurrency(r.subtotal)}
-                            </div>
-                        )}
-                        {isTotalIndividual && (
-                            <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
-                                ${formatCurrency(r.iva)}
-                            </div>
-                        )}
-                        <div style={{ width: "13%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
-                            ${formatCurrency(isTotalIndividual ? r.total : r.subtotal)}
-                        </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            backgroundColor: accentColor,
+                            color: "#fff",
+                            textTransform: "uppercase",
+                            fontWeight: 600,
+                            fontSize: "0.7rem",
+                            padding: "0.5rem 0.625rem",
+                            borderRadius: "0.5rem",
+                        }}
+                    >
+                        <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>Descripción</div>
+                        <div style={{ textAlign: "center", padding: "0 0.375rem" }}>Cant</div>
+                        <div style={{ textAlign: "center", padding: "0 0.375rem" }}>Total</div>
                     </div>
-                    );
-                })}
-            </div>
+                    {items.map((item, i) => {
+                        const r = calculatorPrice(item.quantity, item.unit_price, item.percent_discount);
+                        return (
+                            <div key={i} style={{ display: "flex", flexDirection: "column", border: `1px solid ${accentColor}`, borderRadius: "0.5rem", padding: "0.5rem 0.625rem", gap: "0.25rem" }}>
+                                <div style={{ fontWeight: 600, color: "#3a3a3a", fontSize: "0.875rem" }}>{item.description || "-"}</div>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem", color: "#666", gap: "0.5rem", flexWrap: "wrap" }}>
+                                    <span>Cant: {item.quantity}</span>
+                                    <span>P/U: ${formatCurrency(unitPriceValue(item.unit_price, item.quantity))}</span>
+                                    {hasDiscount && Number(item.percent_discount) > 0 && (
+                                        <span>Desc: {item.percent_discount}%</span>
+                                    )}
+                                    <span style={{ fontWeight: 600, color: "#3a3a3a" }}>${formatCurrency(isTotalIndividual ? r.total : r.subtotal)}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div
+                    style={{
+                        width: "100%",
+                        fontSize: "0.875rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.75rem",
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            backgroundColor: accentColor,
+                            color: "#fff",
+                            textTransform: "uppercase",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            padding: "0.875rem",
+                            borderRadius: "0.5rem",
+                        }}
+                    >
+                        <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>Descripción</div>
+                        <div style={{ width: "10%", textAlign: "center", flex: "none" }}>Cantidad</div>
+                        <div style={{ width: "10%", textAlign: "center", flex: "none" }}>P/U</div>
+                        {hasDiscount && <div style={{ width: "10%", textAlign: "center", flex: "none" }}>Desc.</div>}
+                        {isTotalIndividual && <div style={{ width: "13%", textAlign: "center", flex: "none" }}>Subtotal</div>}
+                        {isTotalIndividual && <div style={{ width: "10%", textAlign: "center", flex: "none" }}>IVA</div>}
+                        <div style={{ width: "13%", textAlign: "center", flex: "none" }}>Total</div>
+                    </div>
 
-        {/* TERMS */}
+                    {items.map((item, i) => {
+                        const r = calculatorPrice(item.quantity, item.unit_price, item.percent_discount);
+                        return (
+                        <div key={i} style={{ display: "flex", border: `1px solid ${accentColor}`, backgroundColor: "#fff", padding: "0.875rem", borderRadius: "0.5rem" }}>
+                            <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", color: "#3a3a3a" }}>
+                                {item.description || "-"}
+                            </div>
+                            <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                {item.quantity}
+                            </div>
+                            <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                ${formatCurrency(unitPriceValue(item.unit_price, item.quantity))}
+                            </div>
+                            {hasDiscount && (
+                                <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                    {item.percent_discount ? `${item.percent_discount}%` : "-"}
+                                </div>
+                            )}
+                            {isTotalIndividual && (
+                                <div style={{ width: "13%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                    ${formatCurrency(r.subtotal)}
+                                </div>
+                            )}
+                            {isTotalIndividual && (
+                                <div style={{ width: "10%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                    ${formatCurrency(r.iva)}
+                                </div>
+                            )}
+                            <div style={{ width: "13%", flex: "none", display: "flex", justifyContent: "center", alignItems: "center", color: "#3a3a3a" }}>
+                                ${formatCurrency(isTotalIndividual ? r.total : r.subtotal)}
+                            </div>
+                        </div>
+                        );
+                    })}
+                </div>
+            )}
+
         <div
             style={{
                 display: "flex",
+                flexDirection: isMobile ? "column" : "row",
                 justifyContent: "space-between",
-                gap: "2rem",
+                gap: isMobile ? "1rem" : "2rem",
                 marginTop: "auto",
             }}
         >
             <div
                 style={{
-                    width: isTotalIndividual ? "100%" : "66.66%",
+                    width: isMobile ? "100%" : isTotalIndividual ? "100%" : "66.66%",
                     fontSize: "0.875rem",
                     color: "#3a3a3a",
                 }}
@@ -316,10 +370,10 @@ export default function QuotationPreview({
             {!isTotalIndividual && (
             <div
                 style={{
-                    width: "33.33%",
+                    width: isMobile ? "100%" : "33.33%",
                     backgroundColor: accentColor,
                     color: "#fff",
-                    padding: "1rem",
+                    padding: isMobile ? "0.75rem" : "1rem",
                     borderRadius: "0.5rem",
                     border: `1px solid ${accentColor}`,
                 }}
@@ -373,7 +427,6 @@ export default function QuotationPreview({
             )}
         </div>
 
-            {/* FOOTER */}
             <div
                 style={{
                     display: "flex",

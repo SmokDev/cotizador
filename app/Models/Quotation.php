@@ -23,7 +23,6 @@ class Quotation extends Model
         'notes',
         'contact',
         'payment_terms',
-        'delivery_label',
         'days_delivery',
     ];
 
