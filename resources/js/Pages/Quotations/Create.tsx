@@ -151,6 +151,9 @@ export default function Create({
 
     const updateItem = (index: number, field: string, value: any) => {
         const next = [...data.items];
+        if ((field === "unit_price" || field === "quantity" || field === "percent_discount") && typeof value === "number" && isNaN(value)) {
+            value = 0;
+        }
         (next[index] as any)[field] = value;
         setData("items", next);
     };

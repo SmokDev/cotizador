@@ -1,12 +1,13 @@
 import type { Item, Result, UnitPrice } from "../types/invoice";
 
 export function calculatorUnitPrice(unitPrice: UnitPrice): number {
-	if (typeof unitPrice === "object") {
+	if (typeof unitPrice === "object" && unitPrice !== null) {
 		const {spents, utility} = unitPrice;
-		const totalSpents = spents.reduce((acc, spent) => acc + spent.quantity, 0);
-		return totalSpents * (1 + ( utility / 100));
+		const totalSpents = spents.reduce((acc, spent) => acc + (Number(spent.quantity) || 0), 0);
+		return totalSpents * (1 + ((Number(utility) || 0) / 100));
 	}
-	return unitPrice;
+	const num = Number(unitPrice);
+	return isNaN(num) ? 0 : num;
 }
 
 export function calculatorUnitPricePerUnit(unitPrice: UnitPrice, quantity: number): number {
@@ -18,10 +19,12 @@ export function calculatorUnitPricePerUnit(unitPrice: UnitPrice, quantity: numbe
 }
 
 export function calculatorPrice(quantity: number, unitPrice: UnitPrice, percentDiscount: number, iva: number = 0.16): Result {
-	const unitPriceResult = calculatorUnitPricePerUnit(unitPrice, quantity);
-	const discountItem = (percentDiscount / 100) * unitPriceResult;
-	const discount = discountItem * quantity;
-	const subtotalWithoutDiscount = unitPriceResult * quantity;
+	const safeQuantity = isNaN(quantity) ? 0 : quantity;
+	const safeDiscount = isNaN(percentDiscount) ? 0 : percentDiscount;
+	const unitPriceResult = calculatorUnitPricePerUnit(unitPrice, safeQuantity);
+	const discountItem = (safeDiscount / 100) * unitPriceResult;
+	const discount = discountItem * safeQuantity;
+	const subtotalWithoutDiscount = unitPriceResult * safeQuantity;
 	const subtotal = subtotalWithoutDiscount - discount;
 	const ivaResult = subtotal * iva;
 	const total = subtotal + ivaResult;
