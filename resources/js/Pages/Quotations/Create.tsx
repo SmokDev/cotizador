@@ -29,6 +29,7 @@ import CostProfitModal from "@/components/CostProfitModal";
 import { calculatorPrice, calculatorTotal } from "@/utils/calculator";
 import { formatCurrency } from "@/utils/helpers";
 import { CalendarDate, parseDate } from "@internationalized/date";
+import { I18nProvider } from "react-aria-components";
 
 interface Client {
     id: number;
@@ -522,6 +523,7 @@ export default function Create({
                                                 <Input />
                                             </TextField>
                                         ) : (
+                                            <I18nProvider locale="en-US">
                                             <NumberField
                                                 value={item.unit_price}
                                                 onChange={(v) =>
@@ -538,7 +540,6 @@ export default function Create({
                                                 }
                                                 isRequired
                                                 minValue={0}
-                                                step={1}
                                                 formatOptions={{
                                                     style: "decimal",
                                                     minimumFractionDigits: 2,
@@ -562,6 +563,7 @@ export default function Create({
                                                     }
                                                 </FieldError>
                                             </NumberField>
+                                            </I18nProvider>
                                         )}
                                     </div>
                                     <div className="min-w-0">
