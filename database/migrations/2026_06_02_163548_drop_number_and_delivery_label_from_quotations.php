@@ -9,13 +9,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('quotations', function (Blueprint $table) {
-            $table->dropColumn('delivery_label');
+            $columns = [];
+            if (Schema::hasColumn('quotations', 'number')) {
+                $columns[] = 'number';
+            }
+            if (Schema::hasColumn('quotations', 'delivery_label')) {
+                $columns[] = 'delivery_label';
+            }
+            if (!empty($columns)) {
+                $table->dropColumn($columns);
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('quotations', function (Blueprint $table) {
+            $table->unsignedBigInteger('number')->nullable();
             $table->string('delivery_label')->nullable();
         });
     }
