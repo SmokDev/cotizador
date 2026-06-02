@@ -65,14 +65,15 @@ export default function Config({ config }: Props) {
                 logoUrl = res.data.url;
             }
 
-            await axios.post("/config", {
+            router.post("/config", {
                 logo: logoUrl,
                 color: formColor,
                 contact: formContact,
                 payment_terms: terms,
+            }, {
+                onFinish: () => setSaving(false),
+                onError: () => setSaving(false),
             });
-
-            router.visit("/config");
         } catch {
             setSaving(false);
         }
@@ -89,8 +90,8 @@ export default function Config({ config }: Props) {
                     </Link>
                     <h1 className="text-xl md:text-2xl font-bold">Configuración de Cotización</h1>
                 </div>
-                <Button variant="primary" onPress={handleSave} isLoading={saving}>
-                    <Save size={16} /> Guardar
+                <Button variant="primary" onPress={handleSave} isDisabled={saving}>
+                    {saving ? "Guardando..." : <><Save size={16} /> Guardar</>}
                 </Button>
             </div>
 
@@ -126,7 +127,7 @@ export default function Config({ config }: Props) {
 
                 <div className="flex flex-col gap-4">
                     <h2 className="text-lg font-semibold border-b pb-2">Color Principal</h2>
-                    <ColorField className="w-full sm:w-[280px]" name="color" value={formColor} onChange={setFormColor}>
+                    <ColorField className="w-full sm:w-[280px]" name="color" value={formColor} onChange={(c) => setFormColor(c ? c.toString("hex") : "#b8860b")}>
                         <Label>Color</Label>
                         <ColorField.Group>
                             <ColorField.Prefix>

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 Route::get('/config', function () {
-    $path = storage_path('app/config/quotations.json');
+    $path = base_path('config.json');
     $config = file_exists($path) ? json_decode(file_get_contents($path), true) : [];
     return inertia('Quotations/Config', ['config' => $config]);
 })->name('quotations.config');
@@ -23,9 +23,8 @@ Route::post('/config', function (Request $request) {
         'payment_terms.*' => 'string|max:255',
     ]);
 
-    $path = storage_path('app/config');
-    if (!is_dir($path)) mkdir($path, 0755, true);
-    file_put_contents("$path/quotations.json", json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    $path = base_path('config.json');
+    file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     return redirect()->route('quotations.config')->with('success', 'Configuración guardada');
 });

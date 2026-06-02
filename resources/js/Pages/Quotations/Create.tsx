@@ -776,10 +776,16 @@ export default function Create({
                         ? put(`/${quotation.id}`)
                         : post("/")
                 }
-                isLoading={processing}
+                isDisabled={processing}
             >
-                <Save size={16} />{" "}
-                {isEditing ? "Guardar Cambios" : "Crear Cotización"}
+                {processing ? (
+                    "Guardando..."
+                ) : (
+                    <>
+                        <Save size={16} />{" "}
+                        {isEditing ? "Guardar Cambios" : "Crear Cotización"}
+                    </>
+                )}
             </Button>
         </div>
     );

@@ -239,7 +239,7 @@ class QuotationController extends Controller
 
     private static function loadConfig(): array
     {
-        $path = storage_path('app/config/quotations.json');
+        $path = base_path('config.json');
         if (!file_exists($path)) return [];
         return json_decode(file_get_contents($path), true) ?: [];
     }
