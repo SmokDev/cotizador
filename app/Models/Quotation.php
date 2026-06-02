@@ -37,20 +37,6 @@ class Quotation extends Model
         ];
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->number)) {
-                $model->number = (static::max('number') ?? 0) + 1;
-            }
-            if (empty($model->delivery_label)) {
-                $model->delivery_label = '';
-            }
-        });
-    }
-
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
