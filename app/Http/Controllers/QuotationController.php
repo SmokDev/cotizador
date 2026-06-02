@@ -197,7 +197,7 @@ class QuotationController extends Controller
         $validated = $request->validate([
             'client_id'        => 'sometimes|required|exists:clients,id',
             'title'            => 'sometimes|required|string',
-            'description'      => 'sometimes|required|string',
+            'description'      => 'sometimes|nullable|string',
             'is_total_individual' => 'nullable|boolean',
             'contact'          => 'sometimes|required|array',
             'items'            => 'sometimes|array',
