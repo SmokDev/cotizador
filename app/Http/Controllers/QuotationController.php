@@ -208,6 +208,9 @@ class QuotationController extends Controller
             'items.*.percent_discount' => 'nullable|numeric',
         ]);
 
+        $validated['description'] ??= '';
+        $validated['is_total_individual'] = $validated['is_total_individual'] ?? false;
+
         DB::transaction(function () use ($quotation, $validated) {
             $oldClientId = $quotation->client_id;
             $quotation->update($validated);
