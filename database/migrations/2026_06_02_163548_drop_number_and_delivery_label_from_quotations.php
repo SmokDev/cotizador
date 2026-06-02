@@ -9,15 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('quotations', function (Blueprint $table) {
-            $columns = [];
             if (Schema::hasColumn('quotations', 'number')) {
-                $columns[] = 'number';
+                // Drop the unique index first to avoid SQLite errors
+                $table->dropUnique('invoices_number_unique');
+                $table->dropColumn('number');
             }
             if (Schema::hasColumn('quotations', 'delivery_label')) {
-                $columns[] = 'delivery_label';
-            }
-            if (!empty($columns)) {
-                $table->dropColumn($columns);
+                $table->dropColumn('delivery_label');
             }
         });
     }
@@ -25,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('quotations', function (Blueprint $table) {
-            $table->unsignedBigInteger('number')->nullable();
+            $table->unsignedBigInteger('number')->nullable()->unique('invoices_number_unique');
             $table->string('delivery_label')->nullable();
         });
     }
